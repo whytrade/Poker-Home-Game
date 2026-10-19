@@ -394,8 +394,8 @@ h1, h2, h3 { margin: 0; line-height: 1.15; }
 
 /* ---------- player page ---------- */
 .hero-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 22px 16px; }
-.hero-card.is-up { background: linear-gradient(180deg, rgba(52, 211, 153, 0.16), var(--surface)); border-color: rgba(52, 211, 153, 0.3); }
-.hero-card.is-down { background: linear-gradient(180deg, rgba(251, 113, 133, 0.14), var(--surface)); border-color: rgba(251, 113, 133, 0.28); }
+.hero-card.is-up { background: linear-gradient(180deg, rgba(52, 211, 153, 0.16), rgba(52, 211, 153, 0)), var(--surface); border-color: rgba(52, 211, 153, 0.3); }
+.hero-card.is-down { background: linear-gradient(180deg, rgba(251, 113, 133, 0.14), rgba(251, 113, 133, 0)), var(--surface); border-color: rgba(251, 113, 133, 0.28); }
 .hero-amount { font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
 .me-head { display: flex; align-items: center; gap: 10px; text-align: left; margin-bottom: 6px; }
 .me-head .avatar { width: 44px; height: 44px; font-size: 1rem; }
@@ -498,3 +498,125 @@ h1, h2, h3 { margin: 0; line-height: 1.15; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
+
+/* =====================================================================
+   Juice layer — fun & alive (RareUI-inspired: depth, shimmer, sparks,
+   spring motion). Everything here is decoration; reduced-motion turns
+   the movement off via the global rule above.
+   ===================================================================== */
+:root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Slow-moving aurora glow behind everything */
+body::before {
+    content: ''; position: fixed; inset: -20vmax; z-index: 0; pointer-events: none;
+    background:
+        radial-gradient(40vmax 40vmax at 20% 20%, var(--accent-soft), transparent 60%),
+        radial-gradient(36vmax 36vmax at 80% 30%, rgba(255, 255, 255, 0.04), transparent 60%),
+        radial-gradient(44vmax 44vmax at 60% 90%, var(--accent-soft), transparent 60%);
+    filter: blur(20px);
+    animation: aurora 22s ease-in-out infinite alternate;
+}
+@keyframes aurora {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(4vmax, -3vmax) rotate(8deg); }
+    100% { transform: translate(-3vmax, 2vmax) rotate(-6deg); }
+}
+
+/* Big, loud type */
+.title { font-weight: 900; letter-spacing: -0.03em; }
+.title-xl { font-size: clamp(2.1rem, 9vw, 3rem); line-height: 1; }
+.title-xl, .stat-main .stat-value, .hero-amount {
+    background: linear-gradient(180deg, #fff 0%, var(--accent-2) 120%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stat-main .stat-value { font-size: 2.4rem; font-weight: 900; }
+.hero-amount { font-size: 3.6rem; font-weight: 900; }
+.hero-card.is-down .hero-amount { background-image: linear-gradient(180deg, #fff 0%, var(--down) 120%); }
+.hero-card.is-up .hero-amount { background-image: linear-gradient(180deg, #fff 0%, var(--up) 120%); }
+.pamt { font-weight: 900; }
+.bump { animation: bump 520ms var(--spring); }
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.14); } 100% { transform: scale(1); } }
+.stat-value, .pamt, .hero-amount { display: inline-block; transform-origin: left center; }
+.hero-amount { transform-origin: center; }
+
+/* Cards: glossy top edge */
+.card, .stat { position: relative; }
+.card::before, .stat::before {
+    content: ''; position: absolute; left: 14px; right: 14px; top: 0; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+}
+
+/* Poker-chip avatars */
+.avatar {
+    position: relative; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    background:
+        radial-gradient(circle, hsl(var(--h), 55%, 32%) 0 52%, transparent 53%),
+        repeating-conic-gradient(hsl(var(--h), 70%, 52%) 0 22.5deg, #f4efe0 22.5deg 45deg);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.35);
+    transition: transform 400ms var(--spring);
+}
+.avatar::after {
+    content: ''; position: absolute; inset: 22%; border-radius: 50%;
+    border: 1.5px dashed rgba(255, 255, 255, 0.35); pointer-events: none;
+}
+.player-row:hover .avatar, .count-row:hover .avatar { transform: rotate(45deg); }
+.flash .avatar { animation: chip-spin 700ms var(--spring); }
+@keyframes chip-spin { from { transform: rotate(-180deg) scale(0.7); } to { transform: rotate(0) scale(1); } }
+
+/* Game code as a playing card */
+.code-big {
+    position: relative; display: inline-block; align-self: flex-start;
+    padding: 6px 16px 6px 34px; border-radius: 12px; transform: rotate(-2.5deg);
+    background-color: #fffdf6; color: #14110a; -webkit-text-fill-color: #14110a;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    transition: transform 400ms var(--spring);
+}
+.code-big::before { content: '♠'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: #14110a; -webkit-text-fill-color: #14110a; }
+.code-big:hover { transform: rotate(1.5deg) scale(1.04); }
+.sheet .code-big { align-self: center; }
+
+/* Springy motion everywhere */
+.btn, .btn-plus, .chip-btn, .icon-btn, .check, .swatch { transition-timing-function: var(--spring); transition-duration: 260ms; }
+.btn:hover:not(:disabled), .chip-btn:hover, .btn-plus:hover { transform: translateY(-1px); }
+.btn:active:not(:disabled), .chip-btn:active, .btn-plus:active { transform: scale(0.95) translateY(1px); }
+.is-new { animation: pop-spring 520ms var(--spring); }
+@keyframes pop-spring { from { opacity: 0; transform: translateY(10px) scale(0.92); } to { opacity: 1; transform: none; } }
+.app > * { animation: rise 520ms var(--spring) both; }
+.app > *:nth-child(2) { animation-delay: 50ms; }
+.app > *:nth-child(3) { animation-delay: 100ms; }
+.app > *:nth-child(4) { animation-delay: 150ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.btn-plus { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px var(--accent-soft); }
+.check.is-on { animation: bump 420ms var(--spring); }
+
+/* Live dot pulse */
+.sync-dot[data-state="ok"] { animation: live-ring 2s ease-out infinite; }
+@keyframes live-ring { 0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); } 100% { box-shadow: 0 0 0 9px rgba(52, 211, 153, 0); } }
+
+/* Toasts: pills that spring in */
+.toast { border-radius: 999px; padding: 10px 16px; animation: toast-spring 420ms var(--spring); }
+@keyframes toast-spring { from { opacity: 0; transform: translateY(-14px) scale(0.9); } to { opacity: 1; transform: none; } }
+
+/* Winner card shine */
+.hero-card.is-up { overflow: hidden; }
+.hero-card.is-up::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    transform: skewX(-20deg); animation: glass-shimmer 3.2s ease-in-out infinite;
+}
+
+/* Click sparks + emoji bursts */
+.spark-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 80; }
+.burst-layer { position: fixed; inset: 0; pointer-events: none; z-index: 75; overflow: hidden; }
+.burst-bit {
+    position: absolute; font-size: 22px; line-height: 1; transform: translate(-50%, -50%);
+    animation: burst-fly var(--d) cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+@keyframes burst-fly {
+    0% { transform: translate(-50%, -50%) scale(0.2) rotate(0); opacity: 1; }
+    35% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--s)) rotate(calc(var(--rot) / 2)); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx) * 1.25), calc(-50% + var(--dy) + 420px)) scale(var(--s)) rotate(var(--rot)); opacity: 0; }
+}
+
+/* Less chrome: name field on the phone join form gets presence */
+.player .card .input-lg[aria-label="Your name"] { height: 60px; font-size: 1.3rem; }

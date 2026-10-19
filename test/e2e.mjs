@@ -55,7 +55,7 @@ try {
     // ---------- phones join ----------
     const mia = await newDevice(browser, server.url, { viewport: PHONE, label: 'mia' });
     await mia.page.goto(`${server.url}/buy-in.html?game=${code}`);
-    await mia.page.waitForSelector('text=Buy in');
+    await mia.page.waitForSelector('button[type="submit"]:has-text("Buy in")');
     await shot(mia.page, 'phone-join');
     await mia.page.fill('input[aria-label="Your name"]', 'Mia');
     await mia.page.click('button[type="submit"]:has-text("Buy in")');
@@ -78,7 +78,7 @@ try {
     await check('host sees both phone players', async () => {
         await host.page.waitForSelector('.player-row:has-text("Mia")');
         await host.page.waitForSelector('.player-row:has-text("Leo")');
-        assert.equal(await text(host.page.locator('.player-row:has-text("Leo") .pamt')), '$40');
+        await host.page.waitForFunction(() => [...document.querySelectorAll('.player-row')].some(r => r.textContent.includes('Leo') && r.querySelector('.pamt').textContent === '$40'), null, { timeout: 3000 });
     });
 
     // ---------- host adds a player by hand + one-tap buy-in ----------
@@ -103,7 +103,7 @@ try {
         });
     });
     await check('pot total is $120', async () => {
-        assert.equal(await text(host.page.locator('.stat-main .stat-value')), '$120');
+        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').textContent === '$120', null, { timeout: 3000 });
     });
     await shot(host.page, 'host-live');
 
@@ -133,12 +133,12 @@ try {
             return row && row.querySelector('.pamt').textContent === '$60';
         }, null, { timeout: 8000 });
         await leo.page.waitForFunction(() => !document.getElementById('pending-bar'), null, { timeout: 5000 });
-        assert.equal(await text(leo.page.locator('.hero-amount')), '$60');
+        await leo.page.waitForFunction(() => document.querySelector('.hero-amount').textContent === '$60', null, { timeout: 3000 });
     });
 
     // ---------- end game ----------
-    await hostPage.click('button:has-text("End game & count chips")');
-    await hostPage.click('.sheet button:has-text("End game & count")');
+    await hostPage.click('button:has-text("End game")');
+    await hostPage.click('.sheet button:has-text("End it")');
     await check('phones are prompted for their count', async () => {
         await mia.page.waitForSelector('text=How many chips do you have?', { timeout: 5000 });
         await leo.page.waitForSelector('text=How many chips do you have?', { timeout: 5000 });
@@ -146,9 +146,9 @@ try {
     await shot(mia.page, 'phone-count');
     // Bought: Mia 2000, Leo 3000, Sam 2000 = 7000 chips.
     await mia.page.fill('input[aria-label="Your chip count"]', '4,500');
-    await mia.page.click('button:has-text("Send my count")');
+    await mia.page.click('button:has-text("Send")');
     await leo.page.fill('input[aria-label="Your chip count"]', '700');
-    await leo.page.click('button:has-text("Send my count")');
+    await leo.page.click('button:has-text("Send")');
     await check('player counts arrive with a phone badge', async () => {
         await hostPage.waitForFunction(() => {
             const rows = [...document.querySelectorAll('.count-row')];
@@ -158,7 +158,7 @@ try {
                 leo.querySelector('.count-input').value === '700' &&
                 mia.querySelector('.src-badge').dataset.src === 'player';
         }, null, { timeout: 5000 });
-        await mia.page.waitForSelector('.count-status:has-text("Host has your count")');
+        await mia.page.waitForSelector('.count-status:has-text("Host has 4,500")');
     });
     // Host types Sam's count with a deliberate miscount first.
     const samInput = hostPage.locator('.count-row:has-text("Sam") .count-input');
@@ -221,7 +221,7 @@ try {
     const host2 = await newDevice(browser, server.url, { viewport: PHONE, label: 'host2' });
     await host2.page.goto(server.url + '/index.html');
     await host2.page.fill('input[aria-label="Game code"]', code);
-    await host2.page.click('button:has-text("Host it here")');
+    await host2.page.click('button:has-text("Host it")');
     await check('second device takes over hosting', async () => {
         await host2.page.waitForSelector('.transfer:has-text("Leo")', { timeout: 5000 });
         await hostPage.waitForSelector('text=Hosted on another device', { timeout: 5000 });

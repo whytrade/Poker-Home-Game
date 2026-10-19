@@ -349,7 +349,122 @@
         return wrap;
     }
 
+    // ---------- juice: sparks, bursts, rolling numbers ----------
+
+    const reducedMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function accentColor() {
+        return getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() || '#fcec52';
+    }
+
+    // Click sparks (after RareUI's ClickSpark): little lines fly out of every
+    // button press. One shared canvas, drawn only while sparks are alive.
+    let sparkCanvas = null;
+    let sparks = [];
+    let sparkRaf = 0;
+    function sparkAt(x, y) {
+        if (reducedMotion()) return;
+        if (!sparkCanvas) {
+            sparkCanvas = h('canvas', { class: 'spark-canvas', 'aria-hidden': 'true' });
+            document.body.appendChild(sparkCanvas);
+        }
+        const dpr = window.devicePixelRatio || 1;
+        if (sparkCanvas.width !== window.innerWidth * dpr || sparkCanvas.height !== window.innerHeight * dpr) {
+            sparkCanvas.width = window.innerWidth * dpr;
+            sparkCanvas.height = window.innerHeight * dpr;
+        }
+        const now = performance.now();
+        const color = accentColor();
+        for (let i = 0; i < 9; i++) sparks.push({ x, y, angle: (Math.PI * 2 * i) / 9 + Math.random() * 0.3, t0: now, color });
+        if (!sparkRaf) sparkRaf = requestAnimationFrame(drawSparks);
+    }
+    function drawSparks(now) {
+        const ctx = sparkCanvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+        const DUR = 420;
+        sparks = sparks.filter(sp => now - sp.t0 < DUR);
+        sparks.forEach(sp => {
+            const t = (now - sp.t0) / DUR;
+            const e = t * (2 - t);
+            const dist = e * 26 + 6;
+            const len = 9 * (1 - e);
+            const x1 = sp.x + dist * Math.cos(sp.angle);
+            const y1 = sp.y + dist * Math.sin(sp.angle);
+            ctx.strokeStyle = sp.color;
+            ctx.lineWidth = 2.2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + len * Math.cos(sp.angle), y1 + len * Math.sin(sp.angle));
+            ctx.stroke();
+        });
+        sparkRaf = sparks.length ? requestAnimationFrame(drawSparks) : 0;
+    }
+    document.addEventListener('pointerdown', e => {
+        const btn = e.target.closest && e.target.closest('button, .btn, a.btn');
+        if (btn && !btn.disabled) sparkAt(e.clientX, e.clientY);
+    }, { passive: true });
+
+    // Emoji confetti. from: {x, y} in px (defaults to top centre).
+    function burst(emojis, opts) {
+        if (reducedMotion()) return;
+        const o = opts || {};
+        const list = Array.isArray(emojis) ? emojis : [emojis];
+        const n = o.count || 22;
+        const x0 = o.x !== undefined ? o.x : window.innerWidth / 2;
+        const y0 = o.y !== undefined ? o.y : window.innerHeight * 0.35;
+        const layer = h('div', { class: 'burst-layer', 'aria-hidden': 'true' });
+        for (let i = 0; i < n; i++) {
+            const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.3;
+            const power = 160 + Math.random() * 260;
+            layer.appendChild(h('span', {
+                class: 'burst-bit',
+                text: list[i % list.length],
+                style: `left:${x0}px;top:${y0}px;` +
+                    `--dx:${Math.round(Math.cos(angle) * power)}px;` +
+                    `--dy:${Math.round(Math.sin(angle) * power)}px;` +
+                    `--rot:${Math.round(Math.random() * 720 - 360)}deg;` +
+                    `--s:${(0.8 + Math.random() * 0.9).toFixed(2)};` +
+                    `--d:${(900 + Math.random() * 700).toFixed(0)}ms`
+            }));
+        }
+        document.body.appendChild(layer);
+        setTimeout(() => layer.remove(), 1800);
+    }
+
+    function burstFrom(el, emojis, count) {
+        if (!el || !el.getBoundingClientRect) { burst(emojis, { count }); return; }
+        const r = el.getBoundingClientRect();
+        burst(emojis, { x: r.left + r.width / 2, y: r.top + r.height / 2, count: count || 14 });
+    }
+
+    // Rolls a number from its previous value to the new one, then bumps it.
+    function rollTo(el, value, format) {
+        if (!el) return;
+        const prev = el._rollValue;
+        el._rollValue = value;
+        if (prev === undefined || prev === value || reducedMotion()) { setText(el, format(value)); return; }
+        cancelAnimationFrame(el._rollRaf);
+        const t0 = performance.now();
+        const DUR = 650;
+        const step = now => {
+            const t = Math.min(1, (now - t0) / DUR);
+            const e = 1 - Math.pow(1 - t, 3);
+            setText(el, format(Math.round(prev + (value - prev) * e)));
+            if (t < 1) el._rollRaf = requestAnimationFrame(step);
+        };
+        el._rollRaf = requestAnimationFrame(step);
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+    }
+
     window.KapokerUI = {
+        burst,
+        burstFrom,
+        rollTo,
         h,
         setText,
         keyedList,

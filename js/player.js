@@ -108,17 +108,23 @@
         if (type === 'join') {
             saveMe({ playerId: ack.playerId, name });
             Sync.storageSet('kapoker.player.name', name || '');
-            UI.toast(ack.message || 'You\'re in!', { type: 'success' });
+            UI.toast('You\'re in 🎉', { type: 'success' });
             UI.play('playKachingSound');
+            setTimeout(() => UI.burst(confetti(), { count: 34 }), 60);
         } else if (type === 'buyin') {
             UI.toast(ack.message || 'Rebuy added', { type: 'success' });
             UI.play('playChipSound');
+            setTimeout(() => UI.burstFrom(document.querySelector('.hero-amount'), ['🪙'], 12), 60);
         } else if (type === 'final') {
-            UI.toast('Count sent ✓', { type: 'success' });
+            UI.toast('Sent ✓', { type: 'success' });
             UI.play('playSuccessSound');
         }
         UI.vibrate(25);
         render();
+    }
+
+    function confetti() {
+        return P.game && P.game.theme === 'banana' ? ['🍌', '🪙', '✨'] : ['🪙', '♠️', '♥️', '✨'];
     }
 
     function cancelPending() {
@@ -158,7 +164,12 @@
             }
             if (before && before.status !== P.game.status) {
                 if (P.game.status === K.STATUS.COUNTING) { UI.vibrate([40, 60, 40]); UI.play('playSuccessSound'); }
-                if (P.game.status === K.STATUS.SETTLED) { UI.vibrate([30, 40, 30]); UI.play('playPayoutSound'); }
+                if (P.game.status === K.STATUS.SETTLED) {
+                    UI.vibrate([30, 40, 30]);
+                    UI.play('playPayoutSound');
+                    const net = P.me && P.game.settlement ? P.game.settlement.nets[P.me.playerId] : undefined;
+                    setTimeout(() => UI.burst(net < 0 ? ['🫠', '💸'] : confetti().concat(['💸', '🎉']), { count: net < 0 ? 16 : 40 }), 120);
+                }
             }
         }
         render();
@@ -241,15 +252,13 @@
             document.body.appendChild(bar);
         }
         const slow = Date.now() - P.pending.sentAt > 6500;
-        const what = P.pending.type === 'join' ? 'buy-in' : P.pending.type === 'buyin' ? 'rebuy' : 'count';
+
         bar.innerHTML = '';
         bar.append(
             h('span', { class: 'spinner', 'aria-hidden': 'true' }),
             h('div', { class: 'grow' },
-                h('div', { class: 'pending-title', text: `Sending your ${what}…` }),
-                h('div', { class: 'muted small', text: !P.hostOnline || slow
-                    ? 'The host\'s screen seems to be off. It\'ll go through as soon as they\'re back.'
-                    : 'Waiting for the host\'s device to confirm' })),
+                h('div', { class: 'pending-title', text: 'Waiting for host…' }),
+                !P.hostOnline || slow ? h('div', { class: 'muted small', text: 'Host screen is off — hang tight' }) : null),
             h('button', { class: 'btn btn-ghost btn-sm', type: 'button', text: 'Cancel', onclick: cancelPending }));
     }
 
@@ -258,9 +267,7 @@
     function buildCode(root) {
         const input = h('input', { class: 'input input-lg num code-input', type: 'text', placeholder: 'CODE', maxlength: '8', autocapitalize: 'characters', autocomplete: 'off', 'aria-label': 'Game code', autofocus: true });
         root.append(h('section', { class: 'card stack' },
-            h('div', { class: 'eyebrow', text: 'Join a game' }),
-            h('h1', { class: 'title', text: 'Enter the game code' }),
-            h('p', { class: 'muted', text: 'It\'s on the host\'s screen under the QR code.' }),
+            h('h1', { class: 'title', text: 'Game code' }),
             h('form', { class: 'stack', onsubmit: e => {
                 e.preventDefault();
                 const code = K.normalizeCode(input.value);
@@ -274,7 +281,6 @@
     function buildOffline(root) {
         root.append(h('section', { class: 'card stack center' },
             h('h1', { class: 'title', text: 'Can\'t connect' }),
-            h('p', { class: 'muted', text: 'Check your internet connection, then reload.' }),
             h('button', { class: 'btn btn-primary btn-block', type: 'button', text: 'Reload', onclick: () => window.location.reload() })));
     }
 
@@ -291,8 +297,7 @@
         root.append(h('section', { class: 'card stack center' },
             h('div', { class: 'eyebrow num', text: P.code }),
             h('h1', { class: 'title', text: 'Game not found' }),
-            h('p', { class: 'muted', text: 'Double-check the code with the host. If they just created it, this page updates by itself.' }),
-            h('a', { class: 'btn btn-ghost btn-block', href: 'buy-in.html', text: 'Enter a different code' })));
+            h('a', { class: 'btn btn-ghost btn-block', href: 'buy-in.html', text: 'Try another code' })));
     }
 
     // ----- join -----
@@ -336,13 +341,11 @@
         r.name = h('input', { class: 'input input-lg', type: 'text', maxlength: String(K.MAX_NAME), autocomplete: 'given-name', placeholder: 'Your name', 'aria-label': 'Your name', enterkeyhint: 'done' });
         r.name.value = Sync.storageGet('kapoker.player.name') || '';
         r.picker = amountPicker();
-        r.rate = h('p', { class: 'muted small' });
-        r.title = h('h1', { class: 'title' });
-        r.submit = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Buy in' });
-        r.removed = h('div', { class: 'callout callout-warn', text: 'The host removed you from the game. Join again if that was a mistake.' });
+        r.title = h('h1', { class: 'title title-xl' });
+        r.submit = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Buy in 🪙' });
+        r.removed = h('div', { class: 'callout callout-warn', text: 'The host removed you.' });
         root.append(
             h('section', { class: 'card stack' },
-                h('div', { class: 'eyebrow', text: 'You\'re invited' }),
                 r.title,
                 r.removed,
                 h('form', { class: 'stack', onsubmit: e => {
@@ -353,8 +356,8 @@
                     if (!Number.isInteger(n) || n <= 0) { UI.toast('Choose a buy-in amount', { type: 'error' }); return; }
                     send('join', { name, chips: n });
                 } },
-                    h('div', { class: 'field' }, h('label', { class: 'label', text: 'Name' }), r.name),
-                    h('div', { class: 'field' }, h('div', { class: 'label', text: 'Buy-in' }), r.picker.el, r.rate),
+                    r.name,
+                    r.picker.el,
                     r.submit)),
             tableCard());
         if (!r.name.value) setTimeout(() => r.name.focus(), 100);
@@ -363,7 +366,6 @@
     function updateJoin() {
         const r = P.refs;
         UI.setText(r.title, P.game.name);
-        UI.setText(r.rate, `${K.formatRate(P.game.rate)} · pay the host`);
         r.removed.hidden = !P.removedNotice;
         r.submit.disabled = !!P.pending;
         r.picker.paint();
@@ -379,23 +381,21 @@
         r.amount = h('div', { class: 'hero-amount num' });
         r.sub = h('div', { class: 'muted num' });
         r.picker = amountPicker();
-        r.rebuyBtn = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Rebuy' });
+        r.rebuyBtn = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Rebuy 🪙' });
         root.append(
             h('section', { class: 'card hero-card' },
-                h('div', { class: 'me-head' }, r.avatarSlot, h('div', null, h('div', { class: 'eyebrow', text: 'You\'re in' }), r.name)),
+                h('div', { class: 'me-head' }, r.avatarSlot, r.name),
                 r.amount,
                 r.sub),
             h('section', { class: 'card stack' },
-                h('div', { class: 'card-head' }, h('h2', { text: 'Rebuy' })),
                 h('form', { class: 'stack', onsubmit: e => {
                     e.preventDefault();
                     const n = r.picker.chips();
                     if (!Number.isInteger(n) || n <= 0) { UI.toast('Choose an amount', { type: 'error' }); return; }
                     send('buyin', { playerId: P.me.playerId, chips: n });
-                } }, r.picker.el, r.rebuyBtn),
-                h('p', { class: 'muted small', text: 'Hand the host the cash, then tap Rebuy — it shows up on their screen.' })),
+                } }, r.picker.el, r.rebuyBtn)),
             tableCard(),
-            h('div', { class: 'center pad' }, h('button', { class: 'btn btn-link', type: 'button', text: 'Not you? Switch player', onclick: () => { saveMe(null); render(); } })));
+            h('div', { class: 'center pad' }, h('button', { class: 'btn btn-link', type: 'button', text: 'Switch player', onclick: () => { saveMe(null); render(); } })));
     }
 
     function updateMe() {
@@ -407,8 +407,8 @@
             r.avatarSlot.replaceWith(r.avatarSlot = UI.avatar(row.name));
         }
         UI.setText(r.name, row.name);
-        UI.setText(r.amount, K.formatMoney(row.boughtCents));
-        UI.setText(r.sub, `${K.formatChips(row.boughtChips)} chips · ${row.buyInCount} buy-in${row.buyInCount === 1 ? '' : 's'}`);
+        UI.rollTo(r.amount, row.boughtCents, K.formatMoney);
+        UI.setText(r.sub, `${K.formatChips(row.boughtChips)} chips`);
         r.rebuyBtn.disabled = !!P.pending;
         r.picker.paint();
         updateTable();
@@ -422,11 +422,10 @@
         r.bought = h('p', { class: 'muted num' });
         r.status = h('div', { class: 'count-status' });
         r.preview = h('div', { class: 'muted small num' });
-        r.sendBtn = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Send my count' });
+        r.sendBtn = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Send' });
         r.input.addEventListener('input', paintPreview);
         root.append(
             h('section', { class: 'card stack count-card' },
-                h('div', { class: 'eyebrow', text: 'Game over' }),
                 h('h1', { class: 'title', text: 'How many chips do you have?' }),
                 r.bought,
                 h('form', { class: 'stack', onsubmit: e => {
@@ -447,25 +446,25 @@
         const n = K.parseChips(r.input.value);
         if (!row || !Number.isInteger(n) || !r.input.value.trim()) { r.preview.textContent = ''; return; }
         const net = K.centsForChips(P.game.rate, n - row.boughtChips);
-        r.preview.textContent = net === 0 ? 'Break even' : (net > 0 ? 'Up ' : 'Down ') + K.formatMoney(Math.abs(net)) + ' (before the final tally)';
+        r.preview.textContent = net === 0 ? 'Even' : (net > 0 ? '📈 up ' : '📉 down ') + K.formatMoney(Math.abs(net));
     }
 
     function updateCount() {
         const r = P.refs;
         const row = myRow();
         if (!row) return;
-        UI.setText(r.bought, `You bought in ${K.formatMoney(row.boughtCents)} (${K.formatChips(row.boughtChips)} chips).`);
+        UI.setText(r.bought, `In for ${K.formatChips(row.boughtChips)}`);
         if (row.final !== null) {
             UI.syncInput(r.input, K.formatChips(row.final));
             r.status.hidden = false;
             r.status.dataset.state = 'ok';
             UI.setText(r.status, row.finalBy === 'player'
-                ? `✓ Host has your count: ${K.formatChips(row.final)} chips. You can still correct it.`
-                : `✓ The host entered ${K.formatChips(row.final)} chips for you. Wrong? Send the right number.`);
-            UI.setText(r.sendBtn, 'Update my count');
+                ? `✓ Host has ${K.formatChips(row.final)}`
+                : `✓ Host entered ${K.formatChips(row.final)}`);
+            UI.setText(r.sendBtn, 'Update');
         } else {
             r.status.hidden = true;
-            UI.setText(r.sendBtn, 'Send my count');
+            UI.setText(r.sendBtn, 'Send');
         }
         r.sendBtn.disabled = !!P.pending;
         paintPreview();
@@ -474,9 +473,7 @@
 
     function buildCountingGuest(root) {
         root.append(h('section', { class: 'card stack' },
-            h('div', { class: 'eyebrow', text: 'Counting chips' }),
-            h('h1', { class: 'title', text: P.game.name }),
-            h('p', { class: 'muted', text: 'Buy-ins are closed and the host is tallying up. Results show here when it\'s settled.' })),
+            h('h1', { class: 'title', text: 'Counting chips 🧮' })),
             tableCard());
     }
 
@@ -486,10 +483,8 @@
         P.refs.body = h('div');
         root.append(
             h('section', { class: 'card settled-head' },
-                h('div', { class: 'eyebrow', text: 'Final results' }),
                 h('h1', { class: 'title', text: P.game.name })),
-            P.refs.body,
-            h('div', { class: 'center pad' }, h('a', { class: 'btn btn-link', href: UI.pageUrl('results.html', { game: P.code }), text: 'Open shareable results page' })));
+            P.refs.body);
     }
 
     function updateSettled() {
@@ -509,9 +504,9 @@
 
     function tableCard() {
         P.refs.tableList = h('ul', { class: 'table-list' });
-        P.refs.tableEmpty = h('p', { class: 'muted small', text: 'No one has bought in yet — you could be first.' });
+        P.refs.tableEmpty = h('p', { class: 'muted small', text: 'Be the first 👀' });
         P.refs.tableHead = h('span', { class: 'muted small num' });
-        P.refs.tableTitle = h('h2', { text: 'At the table' });
+        P.refs.tableTitle = h('h2', { text: 'Table' });
         return h('section', { class: 'card' },
             h('div', { class: 'card-head' }, P.refs.tableTitle, P.refs.tableHead),
             P.refs.tableEmpty,
@@ -525,8 +520,8 @@
         const counting = P.game.status === K.STATUS.COUNTING;
         if (r.tableEmpty) r.tableEmpty.hidden = rows.length > 0;
         UI.setText(r.tableHead, counting
-            ? `${totals.countedPlayers}/${totals.players} counted`
-            : `${K.formatMoney(totals.boughtCents)} in play`);
+            ? `${totals.countedPlayers}/${totals.players}`
+            : K.formatMoney(totals.boughtCents));
         UI.keyedList(r.tableList, rows, x => x.playerId, () => {
             const el = h('li');
             el._slot = h('span');

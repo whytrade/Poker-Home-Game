@@ -40,8 +40,8 @@
         document.title = game.name + ' — results';
         if (game.status !== K.STATUS.SETTLED || !game.settlement) {
             root.appendChild(message(game.name, game.status === K.STATUS.COUNTING
-                ? 'The host is counting chips. Payments show up here the moment it\'s settled.'
-                : 'The game is still on. Payments show up here once the host settles up.'));
+                ? 'Counting chips 🧮'
+                : 'Game\'s still on 🃏'));
             root.appendChild(h('div', { class: 'center pad' }, h('a', { class: 'btn btn-ghost', href: UI.pageUrl('buy-in.html', { game: code }), text: 'Go to the game' })));
             return;
         }
@@ -51,7 +51,6 @@
         const d = new Date(game.settlement.at || game.createdAt);
         root.append(
             h('section', { class: 'card settled-head' },
-                h('div', { class: 'eyebrow', text: 'Final results' }),
                 h('h1', { class: 'title', text: game.name }),
                 h('p', { class: 'muted small', text: d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + K.formatRate(game.rate) })),
             UI.renderSettlement({
@@ -61,8 +60,7 @@
                 onTogglePaid: (key, isPaid) => {
                     Sync.setPaid(code, key, isPaid).catch(() => UI.toast('Couldn\'t save', { type: 'error' }));
                 }
-            }),
-            h('p', { class: 'muted small center pad', text: 'Tap the circle when a payment is done — everyone with this link sees it.' }));
+            }));
     }
 
     function boot() {

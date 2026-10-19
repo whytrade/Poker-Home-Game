@@ -197,14 +197,14 @@
         return ok;
     }
 
-    // Per-deployment Vercel URLs sit behind Vercel's login wall, so links and
-    // QR codes always point at the public production address instead.
-    const PUBLIC_ORIGIN = 'https://poker-home-game-five.vercel.app';
+    // Vercel can put a login/security wall in front of its URLs, so QR codes
+    // and share links always send players to the Firebase-hosted copy, which
+    // is deployed from the same branch and has no wall.
+    const PUBLIC_ORIGIN = 'https://poker-home-game-699e7.web.app';
 
     function pageUrl(file, params) {
-        const host = window.location.hostname;
-        const isProtectedPreview = /\.vercel\.app$/.test(host) && host !== new URL(PUBLIC_ORIGIN).hostname;
-        const base = isProtectedPreview
+        const onVercel = /\.vercel\.app$/.test(window.location.hostname);
+        const base = onVercel
             ? PUBLIC_ORIGIN + '/'
             : window.location.href.split(/[?#]/)[0].replace(/[^/]*$/, '');
         const qs = new URLSearchParams(params).toString();

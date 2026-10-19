@@ -237,7 +237,7 @@ h1, h2, h3 { margin: 0; line-height: 1.15; }
 /* ---------- join card ---------- */
 .join-card { display: flex; gap: 16px; align-items: center; }
 .qr { background: #fff; border-radius: 14px; padding: 8px; display: grid; place-items: center; flex: none; border: 0; overflow: hidden; }
-.qr img, .qr canvas { display: block; max-width: 100%; height: auto; }
+.qr img, .qr canvas { max-width: 100%; height: auto; }
 .qr-sm { width: 148px; height: 148px; }
 .qr-lg { width: min(300px, 80vw); height: min(300px, 80vw); margin: 0 auto; }
 .qr-fallback { color: #111; font-size: 0.8rem; text-align: center; padding: 8px; }

@@ -1,339 +1,58 @@
 # 🃏 Kapoker
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Kapoker](https://img.shields.io/badge/Kapoker-2E8B57?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-active-success.svg)
+Run a home poker game from one device. Players scan a QR code to buy in and rebuy from their phones, the host sees everything live, and at the end the app works out exactly who pays who.
 
-*The ultimate solution for managing your poker games with style and precision*
+## How a game night works
 
-## Overview
+1. **Host** opens the site (laptop or phone), names the game and sets the buy-in, e.g. `$20 gets 1,000 chips`, then taps **Create game**.
+2. **Players** scan the QR code (or open `buy-in.html` and type the 5-letter code), enter their name and pick a buy-in. It shows up on the host's screen right away, marked 📱.
+3. **Rebuys**: players tap **Rebuy** on their phone, or the host taps **+$20** on that player's row. Every buy-in is in the Activity list with an **Undo** button, and a player's ⋯ menu covers custom amounts, removing a buy-in, renaming and removing the player.
+4. **End game & count chips**: buy-ins close and every phone asks *"How many chips do you have?"*. When a player sends their count, a 📱 appears next to it on the host. The host can type or correct any count; ✓ means the host entered it, ⏳ means it's still missing.
+5. The counting screen shows **counted vs. bought chips** live. **Settle up** works once every count is in:
+   - Chips balance → exact payments.
+   - Chips don't balance → the app tells you how many are missing or extra. You can fix the counts, or **Settle anyway**, which splits the pot by chips counted so the books still balance.
+6. **Payments** show as `Leo → Mia $46` (the fewest payments possible). Anyone can tick a payment as paid; everyone sees it live. **Share results** sends a link to `results.html`.
 
-**Kapoker** is a sophisticated yet user-friendly web application designed to streamline the management of poker games. Say goodbye to messy chip calculations, disputed dealer selections, and end-of-night payment confusion. Our application handles everything from tracking player chips to calculating final payouts.
+Need to switch devices mid-game? On the new device, type the game code under **Continue a game** and tap **Host it here**. The old device stops hosting.
 
----
+## How the data works (why the numbers stay right)
 
-## 📋 Overview
+- The **host device owns the game.** The full game lives in the host browser's `localStorage`, and all the math happens there (`js/core.js`).
+- **Phones never edit the game.** They push *requests* (`join`, `buyin`, `final`) to Firebase. The host applies each one exactly once (requests are idempotent by ID), then publishes a read-only **snapshot** along with an **ack** in a single atomic write.
+- One writer means no race conditions: a phone rebuy can't overwrite a host edit, and an incoming update can't clobber a number the host is typing.
+- If the host's screen is off, phone requests wait in Firebase and go through when it's back. Players see a "waiting for host" banner.
+- Money is integer **cents** and chips are integers. Payouts use exact rational (BigInt) math with largest-remainder rounding, so nets always sum to exactly $0.00 and every payment is within a cent of the exact value.
 
-**Kapoker** is a sophisticated yet user-friendly web application designed to streamline the management of poker games. Say goodbye to messy chip calculations, disputed dealer selections, and end-of-night payment confusion. Our application handles everything from tracking player chips to calculating final payouts, allowing you and your friends to focus on what matters most—the game itself.
+Firebase layout (`games/{CODE}`): `host` (lease), `presence/host`, `snapshot`, `requests/*`, `acks/*`, `paid/*`.
 
----
+## Files
 
-## ✨ Key Features
+| File | What it is |
+| --- | --- |
+| `index.html` + `js/host.js` | Host app |
+| `buy-in.html` + `js/player.js` | Player phone page |
+| `results.html` + `js/results.js` | Shareable live results |
+| `js/core.js` | Pure game logic and settlement math (no DOM, no Firebase) |
+| `js/sync.js` | The only file that talks to Firebase |
+| `js/ui.js` | Shared UI helpers (sheets, toasts, QR, settlement view) |
+| `css/app.css` | All styles, mobile first |
+| `next-app/` | Older experimental Next.js/Capacitor port, not deployed |
 
-### 💰 Money-to-Chip Ratio Calculator
-- Precisely define the real-money value of each chip
-- Automatic conversion between cash and chips
-- Supports decimal values for maximum flexibility
+## Develop & test
 
-### 👥 Advanced Player Management
-- Support for up to 9 players per game
-- Individual tracking of initial and current chip counts
-- Real-time updates of player standings
-- Persistent player data between sessions
+No build step. It's static files.
 
-### 🎮 Intuitive Game Controls
-- One-click game initiation and termination
-- Simulate hands to visualize potential outcomes
-- Emergency reset option with confirmation protection
-- Game state persistence through browser storage
+```bash
+npm test            # unit tests for the game logic and payouts (node --test)
+npm run dev         # static server at http://localhost:4173 (talks to the real Firebase)
+npm run test:e2e    # host + phones end-to-end in headless Chromium (fake Firebase)
+```
 
-### 🎯 Interactive Dealer Selection
-- Visually stunning animation for random dealer assignment
-- Fair and transparent selection process
-- Realistic card dealing simulation
-- Winner determination with hand evaluation
+## Deploy
 
-### 💵 Sophisticated Payout Calculator
-- Automatic calculation of inter-player payments
-- Optimized to minimize the number of transactions
-- Clear, easy-to-understand payment instructions
-- Support for fractional dollar amounts
+- **Firebase Hosting**: pushing to the `live` branch deploys via GitHub Actions. PRs get a preview channel.
+- **Vercel**: static, output directory `.` (see `vercel.json`).
 
-### 🎨 Customizable Themes
-- 10 visually distinct themes to match your style:
-  - Classic Green (traditional poker felt)
-  - Royal Blue (elegant casino atmosphere)
-  - Crimson Red (high-energy gaming)
-  - Midnight Black (sophisticated night mode)
-  - Ocean Breeze (relaxing coastal vibe)
-  - Firestorm (intense competitive atmosphere)
-  - Purple Haze (creative and unique)
-  - Neon Nights (vibrant modern aesthetic)
-  - RIZZLER (exclusive themed experience inspired by the Rizzler himself)
-  - Doginme (Tokenised Self Belief inspired theme)
+## License
 
-### 🖼️ Custom Table Images
-- Customizable table images for themed experiences
-- Enhance the game environment with unique visuals
-
-### 🔄 Theme Persistence
-- Theme settings persist between sessions
-- Consistency in game appearance across different sessions
-
-### 🎮 Improved Dealer Selection Animation
-- Enhanced animation for random dealer assignment
-- More realistic and smoother card dealing
-
-### 📊 Detailed Game Statistics
-- Track game statistics and summaries
-- Gain insights into player performance and game outcomes
-
-### 💾 Persistent Game State
-- Game state is saved in browser storage
-- Return to your game even after closing the browser
-- Multiple save slots for different game sessions
-
-### 🎮 Responsive Design
-- Optimized for desktop, tablet, and mobile devices
-- Adjusts layout based on screen size
-- Touch-friendly controls for mobile users
-
-### 🎯 Intuitive Player Management
-- Easy-to-use interface for adding and managing players
-- Real-time updates of chip counts and standings
-
-### 🔄 Real-time Chip Total Updates
-- Instant updates of the total chip count
-- Keep track of the game's progress at a glance
-
-### 📊 Enhanced Game Statistics
-- More detailed game statistics and summaries
-- Gain insights into player performance and game outcomes
-
-### 🐛 Various Bug Fixes and Performance Improvements
-- Address various bugs and improve overall performance
-- Ensure smooth and reliable game experience
-
-### 🎨 Updated Theme System
-- Updated theme system with custom backgrounds
-- Enhance the game environment with unique visuals
-
-### 📱 Enhanced Mobile Responsiveness
-- Improved mobile responsiveness for better user experience
-- Ensure consistent game experience across all devices
-
-### 🎮 Recent Updates
-- Improved payout calculator with enhanced accuracy
-- Enhanced game statistics with more detailed information
-- Various bug fixes and performance improvements
-
----
-
-## 🚀 Getting Started
-
-### System Requirements
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- JavaScript enabled
-- No server or installation required!
-
-### Installation Options
-
-#### Local Installation
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/poker-home-game-manager.git
-   ```
-
-2. **Navigate to Project Directory**:
-   ```bash
-   cd poker-home-game-manager
-   ```
-
-3. **Launch the Application**:
-   - Simply open `index.html` in your browser
-   - No build process or dependencies required
-
-#### Direct Usage
-- Download the ZIP file from the repository
-- Extract to any location on your computer
-- Open `index.html` in your browser
-
-#### Hosted Version
-- Access the live version at: `https://yourdomain.com/poker-manager`
-- No installation required—just bookmark and play!
-
----
-
-## 📖 Detailed Usage Guide
-
-### Setting Up Your Game
-
-#### 1. Configure Money-to-Chip Ratio
-- Enter the total money amount (e.g., $100)
-- Enter the corresponding chip amount (e.g., 500)
-- Click "Set Ratio" to establish that each chip is worth $0.20
-- This ratio will be used for all payout calculations
-
-#### 2. Add Players
-- Enter each player's name
-- Specify their initial chip count
-- Click "Add Player" to register them for the game
-- Repeat for all participants (2-9 players supported)
-
-#### 3. Start the Game
-- Ensure at least 2 players are added
-- Click "Start Game" to lock in players and begin
-- The dealer selection animation will automatically run
-- Player removal and chip adjustments are disabled during active games
-
-### During the Game
-
-#### Simulating Hands
-- Click "Simulate Hand" to run the dealer animation
-- Watch as cards are dealt to each player
-- See community cards revealed in sequence
-- Witness the winner determination and celebration
-
-#### Managing Chip Counts
-- During active games, chip counts are locked
-- End the game to update final chip counts
-
-### Ending the Game
-
-#### 1. Conclude the Session
-- Click "End Game" when your poker session is complete
-- This unlocks the chip count fields for final adjustments
-
-#### 2. Update Final Chip Counts
-- Enter the final chip count for each player
-- Ensure accuracy as this determines payouts
-
-#### 3. Calculate Payouts
-- Click "Calculate Payouts" to determine who owes what
-- Review the generated payment instructions
-- The system optimizes for minimum number of transactions
-
-#### 4. Reset or Start New Game
-- Click "Reset Game" to clear all data and start fresh
-- Or adjust players and click "Start Game" for another round
-
----
-
-## 🎨 Theme Customization
-
-### Selecting a Theme
-- Click the theme dropdown in the header
-- Choose from 10 visually distinct options
-- Changes apply instantly with smooth transitions
-
-### Theme Details
-
-| Theme Name | Description | Best For |
-|------------|-------------|----------|
-| Classic Green | Traditional poker felt with emerald tones | Authentic casino experience |
-| Royal Blue | Elegant deep blue with gold accents | Sophisticated game nights |
-| Crimson Red | Bold red with dynamic contrasts | High-energy tournaments |
-| Midnight Black | Dark mode with subtle highlights | Evening sessions |
-| Ocean Breeze | Calming aqua and teal palette | Relaxed casual games |
-| Firestorm | Vibrant orange and red gradients | Intense competitive play |
-| Purple Haze | Creative violet and lavender scheme | Unique gaming atmosphere |
-| Neon Nights | Electric green on dark background | Modern gaming setups |
-| RIZZLER | Custom theme with special iconography | Exclusive experience |
-| Doginme | Playful design with canine elements | Fun, casual sessions |
-
----
-
-## 🛠️ Advanced Features
-
-### Local Storage
-- Game state automatically saved in browser storage
-- Return to your game even after closing the browser
-- Multiple save slots for different game sessions
-
-### Hand Evaluation
-- Accurate poker hand ranking system
-- Evaluates all possible 5-card combinations
-- Supports standard hand hierarchy from high card to royal flush
-
-### Responsive Design
-- Optimized for desktop, tablet, and mobile devices
-- Adjusts layout based on screen size
-- Touch-friendly controls for mobile users
-
----
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Issue**: Game won't start  
-**Solution**: Ensure you have added at least 2 players
-
-**Issue**: Animation not working  
-**Solution**: Check that JavaScript is enabled in your browser
-
-**Issue**: Theme not changing  
-**Solution**: Try refreshing the page or clearing browser cache
-
-**Issue**: Data lost between sessions  
-**Solution**: Make sure local storage is enabled in your browser
-
----
-
-## 🤝 Contributing
-
-We welcome contributions to improve Kapoker! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**:
-   ```bash
-   git commit -m 'Add some amazing feature'
-   ```
-4. **Push to your branch**:
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
-
----
-
-## 💻 Technologies Used
-
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Storage**: Browser LocalStorage API
-- **Animations**: CSS Transitions and JavaScript
-- **Responsive Design**: CSS Grid and Flexbox
-- **Card Evaluation**: Custom poker hand evaluation algorithm
-- **Styling**: Custom CSS variables for theming
-
----
-
-## 🌟 Future Enhancements
-
-- **Tournament Mode**: Support for multi-table tournaments with automatic rebalancing and blind structures
-- **Statistics Dashboard**: Track player performance and win rates for a given game.
-- **Mobile App**: Native mobile application for iOS and Android
-- **AI Assistance**: Get suggestions for optimal payouts and seating arrangements
-- **Multi-Language Support**: Internationalization for global accessibility
-
----
-
-## 📜 License
-
-Copyright (c) 2023 Kapoker
-
-This project is licensed under the MIT License.
-
-MIT License
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. 
+MIT, see [LICENSE](LICENSE).

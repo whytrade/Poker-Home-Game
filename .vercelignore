@@ -1,10 +1,9 @@
 node_modules
 next-app
+test
 .git
 .github
 .vscode
-h
-tatus
 README.md
 LICENSE
 package.json

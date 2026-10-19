@@ -1,67 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="felt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Payouts | Kapoker</title>
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Results — Kapoker</title>
+    <meta name="theme-color" content="#0b0f14">
     <link rel="icon" href="images/k-favicon.png" type="image/png">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/results.css">
+    <link rel="preload" href="fonts/sf-pro-rounded-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/app.css">
 </head>
-<body class="results-body">
-    <main class="results-shell">
-        <header class="results-header">
-            <div class="results-brand">Kapoker</div>
-            <h1 id="game-name" class="results-title">Loading payouts…</h1>
-            <div id="game-date" class="results-date"></div>
-        </header>
+<body class="results">
+    <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Kapoker">
+            <span class="brand-mark" aria-hidden="true">♠</span>
+            <span class="brand-text">Kapoker</span>
+        </a>
+        <div class="topbar-game"><span id="topbar-name" class="topbar-name"></span></div>
+        <div class="sync" aria-live="polite">
+            <span id="sync-dot" class="sync-dot" data-state="wait"></span>
+            <span id="sync-label" class="sync-label">Connecting…</span>
+        </div>
+    </header>
 
-        <!-- Progress -->
-        <section id="progress-section" class="progress-section" hidden>
-            <div class="progress-line">
-                <span id="progress-text">0 of 0 payments settled</span>
-                <span id="progress-percent" class="progress-percent">0%</span>
-            </div>
-            <div class="progress-track">
-                <div id="progress-bar" class="progress-bar" style="width:0%"></div>
-            </div>
-        </section>
+    <main id="app" class="app"></main>
 
-        <!-- Remittance list -->
-        <section id="remittance-section" class="card remittance-section" hidden>
-            <h2 class="section-heading">Who pays who</h2>
-            <ul id="remittance-list" class="remittance-list"></ul>
-        </section>
-
-        <!-- Net summary -->
-        <section id="summary-section" class="card summary-section" hidden>
-            <h2 class="section-heading">Net results</h2>
-            <ul id="summary-list" class="summary-list"></ul>
-        </section>
-
-        <!-- Empty / error state -->
-        <section id="empty-state" class="card empty-state" hidden>
-            <div class="empty-icon">🃏</div>
-            <h2 class="empty-title">No payouts yet</h2>
-            <p id="empty-message" class="empty-message">No payouts have been calculated for this game yet.</p>
-        </section>
-
-        <footer class="results-footer">
-            <span class="results-footer-hint">Tap a payment to mark it settled. Everyone with the link sees updates live.</span>
-        </footer>
-    </main>
-
-    <!-- Firebase SDK (compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
-    <!-- Firebase configuration + app init -->
     <script src="js/firebase-config.js"></script>
-
-    <!-- Page logic -->
+    <script src="js/core.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/results.js"></script>
-
-    <div class="toast-container"></div>
 </body>
 </html>

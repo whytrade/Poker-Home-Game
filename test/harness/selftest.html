@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fake Firebase self-test</title>
+  <script>
+    // Default: load the shim directly. ?via=gstatic loads the real CDN URLs
+    // instead, so the self-test also covers helpers.newDevice()'s route injection.
+    (function () {
+      var viaCdn = /[?&]via=gstatic\b/.test(location.search);
+      var scripts = viaCdn
+        ? ['https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
+           'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js',
+           'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js']
+        : ['/test/harness/fake-firebase.js'];
+      scripts.forEach(function (src) { document.write('<script src="' + src + '"><\/script>'); });
+    })();
+  </script>
+</head>
+<body>
+  <p>Fake Firebase self-test page, driven by test/harness/selftest.mjs.</p>
+  <script>
+    firebase.initializeApp({ projectId: 'selftest', databaseURL: 'https://selftest-default-rtdb.firebaseio.com' });
+    window.db = firebase.database();
+  </script>
+</body>
+</html>

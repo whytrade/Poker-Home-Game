@@ -1,283 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="felt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Kapoker - Home Game Manager</title>
-    <meta name="description" content="A modern poker game manager to track chips, select dealers, and calculate payouts">
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Kapoker — Host</title>
+    <meta name="description" content="Run a home poker game: phone buy-ins, live chip tracking and exact payouts.">
+    <meta name="theme-color" content="#0b0f14">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Poker Game">
+    <meta name="apple-mobile-web-app-title" content="Kapoker">
     <link rel="icon" href="images/k-favicon.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="images/k-favicon.png">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/themes.css">
+    <link rel="preload" href="fonts/sf-pro-rounded-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/app.css">
 </head>
-<body class="index-page">
-    <!-- Use modern background effects -->
-    <div class="particles"></div>
-
-    <!-- Redesigned header with better alignment -->
-    <header class="app-header">
-        <div class="header-pattern"></div>
-        <div class="modern-backdrop">
-            <div class="gradient-layer"></div>
-            <div class="pattern-overlay"></div>
-            <div class="accent-line accent-line-1"></div>
-            <div class="accent-line accent-line-2"></div>
-            <div class="accent-line accent-line-3"></div>
-            <div class="light-effect light-effect-1"></div>
-            <div class="light-effect light-effect-2"></div>
-            <div class="card-symbol card-symbol-1">♠</div>
-            <div class="card-symbol card-symbol-2">♥</div>
-            <div class="card-symbol card-symbol-3">♣</div>
-            <div class="card-symbol card-symbol-4">♦</div>
-            <div class="header-sparkle"></div>
-            <div class="header-sparkle"></div>
-            <div class="header-sparkle"></div>
-            <div class="header-sparkle"></div>
-            <div class="header-sparkle"></div>
+<body class="host">
+    <header class="topbar">
+        <button id="brand" class="brand" type="button" aria-label="Kapoker">
+            <span class="brand-mark" aria-hidden="true">♠</span>
+            <span class="brand-text">Kapoker</span>
+        </button>
+        <div class="topbar-game">
+            <span id="topbar-name" class="topbar-name"></span>
+            <button id="topbar-code" class="code-chip num" type="button" title="Show join QR" hidden></button>
         </div>
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-wrapper">
-                    <!-- <img src="images/Kapoker-logo.png" alt="Kapoker" class="header-logo" width="160" height="40"> -->
-                    <div id="text-logo" class="header-logo-text">
-                        <span>K</span><span>a</span><span>p</span><span>o</span><span>k</span><span>e</span><span>r</span> 
-                    </div>
-                </div>
-            </div>
-            <div class="header-center">
-            </div>
-            <div class="header-right">
-                <div id="theme-swatches" class="theme-swatches-container"></div>
-                <button id="random-theme" class="theme-random-btn" title="Random Theme">🎲</button>
-            </div>
+        <div class="sync" aria-live="polite">
+            <span id="sync-dot" class="sync-dot" data-state="wait"></span>
+            <span id="sync-label" class="sync-label">Connecting…</span>
         </div>
-        <div class="banana-boat-header-graphic"> 
-            <div class="banana-body"></div>
-            <div class="banana-stem"></div>
-            <div class="banana-tip"></div>
-            <div class="boat-hull"></div>
-        </div> 
+        <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">⚙︎</button>
     </header>
 
-    <!-- Hero Section removed as requested -->
+    <main id="app" class="app" aria-live="off"></main>
 
-    <main class="app-content" id="app-content">
-        <section id="game-lobby">
-            <div class="card-header">
-                <h2>Game Lobby</h2>
-                <div class="game-status-badge inactive">
-                    <span></span>
-                    <div id="lobby-status">No active game</div>
-                </div>
-            </div>
-            
-            <div class="lobby-content">
-                <form id="create-lobby-form" class="setup-form">
-                    <div class="form-group">
-                        <label for="game-name">Game Name</label>
-                        <input 
-                            type="text" 
-                            id="game-name" 
-                            name="game-name" 
-                            placeholder="Enter a name for your game"
-                            required
-                        >
-                    </div>
-                    <button type="submit" class="poker-button create-lobby-btn">
-                        Create Game Lobby
-                    </button>
-                </form>
-                
-                <div id="qr-code-container" class="qr-code-section" style="display: none;">
-                    <h3>Join the Game</h3>
-                    <div class="qr-wrapper"></div>
-                    <div class="join-url">
-                        <span id="join-url-text"></span>
-                        <div class="click-to-copy">Click to copy</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <noscript><p class="pad center">Kapoker needs JavaScript.</p></noscript>
 
-        <section id="add-player">
-            <div class="card-header">
-                <h2>Add Player</h2>
-            </div>
-
-            <div class="card-content">
-                <div class="info-message">
-                    <span class="info-icon">ℹ️</span>
-                    <p>Players can join automatically by scanning the QR code during the game. Use this form only if manual entry is needed.</p>
-                </div>
-
-                <form id="player-form" class="setup-form">
-                    <div class="form-group">
-                        <label for="player-name">Player Name</label>
-                        <input 
-                            type="text" 
-                            id="player-name" 
-                            name="player-name" 
-                            placeholder="Enter player name"
-                            required
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label for="initial-chips">Initial Chips</label>
-                        <input 
-                            type="number" 
-                            id="initial-chips" 
-                            name="initial-chips"
-                            placeholder="Enter chip amount"
-                            min="0"
-                            step="1"
-                            required
-                        >
-                    </div>
-                    <button type="submit" class="poker-button">Add Player</button>
-                </form>
-            </div>
-        </section>
-
-        <section id="players">
-            <div class="card-header">
-                <h2>Players</h2>
-                <div class="card-actions">
-                    <!-- Any actions would go here -->
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table id="player-table">
-                    <thead>
-                        <tr>
-                            <th>Player</th>
-                            <th>Starting</th>
-                            <th>Current</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-
-            <div class="empty-state" id="no-players-message">
-                <div class="empty-state-icon">👥</div>
-                <p>No players added yet</p>
-                <span>Add players to start your game</span>
-            </div>
-        </section>
-        
-        <section id="game-controls">
-            <div class="card-header">
-                <h2>Game Controls</h2>
-            </div>
-
-            <div class="card-content">
-                <form id="ratio-form" class="setup-form">
-                    <div class="form-group">
-                        <label for="money-amount">Money Amount ($)</label>
-                        <input 
-                            type="number" 
-                            id="money-amount" 
-                            name="money-amount"
-                            placeholder="Enter money amount"
-                            min="0"
-                            step="0.01"
-                            required
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label for="chip-amount">Chip Amount</label>
-                        <input 
-                            type="number" 
-                            id="chip-amount" 
-                            name="chip-amount"
-                            placeholder="Enter chip amount"
-                            min="0"
-                            step="1"
-                            required
-                        >
-                    </div>
-                    <div class="button-group ratio-button-group">
-                        <button type="submit" class="poker-button">Set Ratio</button>
-                    </div>
-                </form>
-                
-                <!-- New wrapper for ratio display and reset button -->
-                <div class="ratio-reset-wrapper">
-                    <div class="ratio-display">
-                        <p id="ratio-display">Each chip is worth $1.00</p>
-                    </div>
-                    <button id="reset-btn" class="poker-button reset-button">
-                        <span class="button-icon">↺</span> Reset Game
-                    </button>
-                </div>
-            </div>
-        </section>
-        
-        <section id="payout-calculator">
-            <div class="card-header">
-                <h2>Payout Calculator</h2>
-            </div>
-            <div class="card-content">
-                <div class="payout-info">
-                    <p>Calculate optimal payouts based on final chip counts.</p>
-                </div>
-                <div class="payout-results" id="payout-results">
-                    <div class="no-payouts-message">
-                        <p>No payouts calculated yet</p>
-                        <span>Update final chip counts and click calculate</span>
-                    </div>
-                </div>
-                <button id="calculate-payouts" class="poker-button">
-                    <span class="button-icon">💰</span> Calculate Payouts
-                </button>
-                <button id="finalize-payouts-btn" class="poker-button">
-                    <span class="button-icon">📲</span> Show Payouts to Players
-                </button>
-                <button id="reopen-game-btn" class="poker-button secondary-action" style="display: none; background-color: var(--warning-color, #f0ad4e); border-color: var(--warning-color, #eea236);">
-                    <span class="button-icon">🔄</span> Re-open Game
-                </button>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Reset Animation Elements -->
-    <div class="reset-curtain"></div>
-    <div class="confetti-container"></div>
-    <div class="shuffle-effect"></div>
-    <div class="ripple-effect"></div>
-
-    <!-- Audio Elements -->
-    <audio id="card-shuffle-sound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-poker-cards-falling-on-table-1992.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- Firebase SDK - MUST BE LOADED FIRST -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js" defer></script>
-    
-    <!-- Firebase Configuration - MUST BE LOADED BEFORE OTHER APP CODE -->
-    <script src="js/firebase-config.js" defer></script>
-
-    <!-- Core Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-
-    <!-- Application Code -->
-    <script src="js/soundSystem.js" defer></script>
-    <script src="js/game-data.js" defer></script>
-    <script src="js/app.js" defer></script>
-
-    <!-- Initialize - MOVED TO app.js -->
-    <!-- Script with DOMContentLoaded and style fixes - MOVED TO app.js -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/soundSystem.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/host.js"></script>
 </body>
 </html>

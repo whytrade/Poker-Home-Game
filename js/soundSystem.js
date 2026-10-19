@@ -213,3 +213,5 @@ const SoundSystem = {
             this._note(f, { delay: d, dur: 0.32, peak: 0.60, attack: 0.012, type: 'sine', cutoff: 2800 }));
     }
 };
+
+window.SoundSystem = SoundSystem;

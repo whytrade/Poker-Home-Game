@@ -1,24 +1,16 @@
 {
-  "name": "poker-home-game",
-  "version": "1.0.0",
-  "description": "<div align=\"center\">",
-  "main": "app.js",
+  "name": "kapoker",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Kapoker — home poker game manager: phone buy-ins, live chip tracking and exact payouts.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node test/harness/server.js 4173",
+    "test": "node --test test/*.test.js",
+    "test:e2e": "node test/e2e.mjs"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/taodogger/Poker-Home-Game.git"
+    "url": "git+https://github.com/whytrade/Poker-Home-Game.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/taodogger/Poker-Home-Game/issues"
-  },
-  "homepage": "https://github.com/taodogger/Poker-Home-Game#readme",
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "firebase": "^11.4.0"
-  }
+  "license": "MIT"
 }

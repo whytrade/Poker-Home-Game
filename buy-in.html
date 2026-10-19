@@ -1,111 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="felt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy-in | Kapoker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Join game — Kapoker</title>
+    <meta name="theme-color" content="#0b0f14">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="images/k-favicon.png" type="image/png">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/themes.css">
-    <link rel="stylesheet" href="css/buy-in.css">
+    <link rel="apple-touch-icon" href="images/k-favicon.png">
+    <link rel="preload" href="fonts/sf-pro-rounded-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/app.css">
 </head>
-<body class="buy-in-body">
-    <!-- Use generic class names -->
-    <div class="particles"></div>
-    <div class="cards">
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-    </div>
-
-    <div class="container">
-        <h1 class="buy-in-title">Join Game</h1>
-        <div id="game-info">
-            <h2>Loading game info...</h2>
+<body class="player">
+    <header class="topbar">
+        <a class="brand" href="buy-in.html" aria-label="Kapoker">
+            <span class="brand-mark" aria-hidden="true">♠</span>
+            <span class="brand-text">Kapoker</span>
+        </a>
+        <div class="topbar-game"><span id="topbar-name" class="topbar-name"></span></div>
+        <div class="sync" aria-live="polite">
+            <span id="sync-dot" class="sync-dot" data-state="wait"></span>
+            <span id="sync-label" class="sync-label">Connecting…</span>
         </div>
-        <form id="buy-in-form" class="setup-form">
-            <div class="form-group">
-                <label for="player-name">Your Name</label>
-                <input type="text" id="player-name" name="player-name" required>
-            </div>
-            <div class="form-group">
-                <label for="buy-in-amount">Buy-in Amount ($)</label>
-                <input type="number" id="buy-in-amount" name="buy-in-amount" required min="1" step="0.01">
-            </div>
-            <div class="chip-preview">
-                <p>You will receive <strong><span id="chip-amount">0</span> chips</strong></p>
-                <p>Current ratio: $<span id="chip-ratio">1.00</span> per chip</p>
-            </div>
-            <button type="submit" class="poker-button">
-                <span class="button-text">Join Game</span>
-                <span class="button-spinner"></span>
-            </button>
-        </form>
+    </header>
 
-        <!-- Welcome/Success Message Area (will be populated by JS) -->
-        <div id="welcome-message-area" class="welcome-container" style="display: none;">
-            <!-- Content will be injected here by buy-in.js -->
-            <!-- Example:
-            <div class="welcome-content">
-                <h2>🎉 Welcome to [Game Name]!</h2>
-                <p>You've successfully joined with [X] chips.</p>
-                <p>The host will manage the game from here.</p>
-                <p class="close-instruction">You can close this window now.</p>
-                <button id="rebuy-action-button" class="poker-button secondary-button" style="display: none;">Rebuy</button>
-            </div>
-            -->
-        </div>
+    <main id="app" class="app"></main>
 
-        <!-- Rebuy Form (initially hidden) -->
-        <div id="rebuy-form-area" style="display: none;">
-            <h2>Rebuy Chips</h2>
-            <form id="rebuy-form" class="setup-form">
-                <p>Player: <strong id="rebuy-player-name-display"></strong></p>
-                <div class="form-group">
-                    <label for="rebuy-amount">Rebuy Amount ($)</label>
-                    <input type="number" id="rebuy-amount" name="rebuy-amount" required min="1" step="0.01">
-                </div>
-                <div class="chip-preview">
-                     <p>You will receive <strong><span id="rebuy-chip-amount">0</span> chips</strong></p>
-                     <p>Current ratio: $<span id="chip-ratio-rebuy">1.00</span> per chip</p>
-                 </div>
-                <button type="submit" id="confirm-rebuy-button" class="poker-button">
-                    <span class="button-text">Confirm Rebuy</span>
-                    <span class="button-spinner"></span>
-                </button>
-                <button type="button" id="cancel-rebuy-button" class="poker-button tertiary-button">Cancel</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Payout Display Area (Initially Hidden) -->
-    <div id="payout-display-area" class="container payout-container" style="display: none;">
-        <h2>Game Concluded - Payouts</h2>
-        <div id="player-specific-payouts">
-            <!-- Payout details will be injected here by JS -->
-            <p>Loading payout information...</p>
-        </div>
-        <p class="close-instruction">Please settle payments with other players. You can now close this window.</p>
-    </div>
-
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-    
-    <!-- Firebase Configuration - Make sure this comes before other app code -->
     <script src="js/firebase-config.js"></script>
-    
-    <!-- Application Code -->
-    <script src="js/game-data.js"></script>
-    <script src="js/buy-in.js"></script>
-
-    <div class="toast-container"></div>
+    <script src="js/soundSystem.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/player.js"></script>
 </body>
-</html> 
+</html>

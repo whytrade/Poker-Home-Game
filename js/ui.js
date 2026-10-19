@@ -197,8 +197,16 @@
         return ok;
     }
 
+    // Per-deployment Vercel URLs sit behind Vercel's login wall, so links and
+    // QR codes always point at the public production address instead.
+    const PUBLIC_ORIGIN = 'https://poker-home-game-five.vercel.app';
+
     function pageUrl(file, params) {
-        const base = window.location.href.split(/[?#]/)[0].replace(/[^/]*$/, '');
+        const host = window.location.hostname;
+        const isProtectedPreview = /\.vercel\.app$/.test(host) && host !== new URL(PUBLIC_ORIGIN).hostname;
+        const base = isProtectedPreview
+            ? PUBLIC_ORIGIN + '/'
+            : window.location.href.split(/[?#]/)[0].replace(/[^/]*$/, '');
         const qs = new URLSearchParams(params).toString();
         return base + file + (qs ? '?' + qs : '');
     }

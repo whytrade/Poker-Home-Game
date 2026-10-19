@@ -19,6 +19,8 @@ let step = 0;
 
 async function shot(page, name) {
     step += 1;
+    const junk = await page.evaluate(() => (document.body.innerText.match(/\b(null|undefined|NaN)\b/) || [])[0]);
+    if (junk) { failures += 1; console.log(`FAIL stray "${junk}" text on screen: ${name}`); }
     await page.screenshot({ path: path.join(SHOTS, `${String(step).padStart(2, '0')}-${name}.png`), fullPage: true });
 }
 

@@ -141,7 +141,7 @@
             code: normalizeCode(code),
             name: cleanName(name) || 'Poker Night',
             rate: { cents: rate.cents, chips: rate.chips },
-            theme: typeof theme === 'string' ? theme : 'felt',
+            theme: typeof theme === 'string' ? theme : 'banana',
             status: STATUS.LIVE,
             createdAt: t,
             updatedAt: t,
@@ -185,7 +185,7 @@
             code: normalizeCode(raw.code),
             name: cleanName(raw.name) || 'Poker Night',
             rate,
-            theme: typeof raw.theme === 'string' ? raw.theme : 'felt',
+            theme: typeof raw.theme === 'string' ? raw.theme : 'banana',
             status,
             createdAt: Number(raw.createdAt) || 0,
             updatedAt: Number(raw.updatedAt) || 0,
@@ -352,7 +352,7 @@
     }
 
     function setTheme(game, theme, now) {
-        return mutate(game, g => { g.theme = String(theme || 'felt'); return true; }, now);
+        return mutate(game, g => { g.theme = String(theme || 'banana'); return true; }, now);
     }
 
     function endGame(game, now) {

@@ -206,6 +206,7 @@
     // ---------- theme + misc ----------
 
     const THEMES = [
+        { id: 'banana', name: 'Banana', swatch: '#FCEC52' },
         { id: 'felt', name: 'Felt', swatch: '#1f9d63' },
         { id: 'royal', name: 'Royal', swatch: '#3b6cf5' },
         { id: 'crimson', name: 'Crimson', swatch: '#e2445c' },
@@ -214,11 +215,35 @@
     ];
 
     function applyTheme(id) {
-        const theme = THEMES.find(t => t.id === id) ? id : 'felt';
+        const theme = THEMES.find(t => t.id === id) ? id : 'banana';
         document.documentElement.setAttribute('data-theme', theme);
         const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', '#0b0f14');
+        if (meta) meta.setAttribute('content', theme === 'banana' ? '#141311' : '#0b0f14');
+        const mark = document.querySelector('.brand-mark');
+        if (mark) mark.textContent = theme === 'banana' ? '🍌' : '♠';
+        bananaSky(theme === 'banana');
         return theme;
+    }
+
+    // Banana theme: a few bananas drifting up behind everything.
+    function bananaSky(on) {
+        let sky = document.getElementById('banana-sky');
+        if (!on) { if (sky) sky.remove(); return; }
+        if (sky || !document.body) return;
+        sky = h('div', { id: 'banana-sky', 'aria-hidden': 'true' });
+        for (let i = 0; i < 14; i++) {
+            sky.appendChild(h('span', {
+                class: 'banana',
+                text: '🍌',
+                style: `left:${Math.round(Math.random() * 96)}%;` +
+                    `--dur:${(14 + Math.random() * 14).toFixed(1)}s;` +
+                    `--delay:${(-Math.random() * 28).toFixed(1)}s;` +
+                    `--size:${(18 + Math.random() * 22).toFixed(0)}px;` +
+                    `--spin:${Math.round(Math.random() * 120 - 60)}deg;` +
+                    `--sway:${Math.round(Math.random() * 60 - 30)}px`
+            }));
+        }
+        document.body.prepend(sky);
     }
 
     function initials(name) {

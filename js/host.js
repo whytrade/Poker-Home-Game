@@ -52,7 +52,7 @@
     }
 
     function prefs() {
-        return Object.assign({ rateCents: 2000, rateChips: 1000, theme: 'felt', name: '' }, loadJSON(LS_PREFS) || {});
+        return Object.assign({ rateCents: 2000, rateChips: 1000, theme: 'banana', name: '' }, loadJSON(LS_PREFS) || {});
     }
 
     function savePrefs(patch) {
@@ -761,7 +761,7 @@
             codeInput, h('button', { class: 'btn btn-ghost', type: 'submit', text: 'Host it here' }));
 
         const archived = (loadJSON(LS_ARCHIVE) || []).filter(Boolean).slice(0, 6);
-        root.append(
+        root.append(...[
             h('section', { class: 'card hero-setup' },
                 h('div', { class: 'eyebrow', text: 'Host a game' }),
                 h('h1', { class: 'title', text: 'Deal me in.' }),
@@ -781,7 +781,8 @@
                             h('div', { text: n.name }),
                             h('div', { class: 'muted small', text: `${new Date(n.createdAt).toLocaleDateString()} · ${n.players.length} players · ${K.formatMoney(pot)} · ${n.status}` })),
                         h('button', { class: 'btn btn-ghost btn-sm', type: 'button', text: 'Open', onclick: () => openArchived(n.code) }));
-                }))) : null);
+                }))) : null
+        ].filter(Boolean));
     }
 
     // ----- lease lost -----

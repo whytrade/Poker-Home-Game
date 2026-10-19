@@ -546,7 +546,7 @@
     // ---------- boot ----------
 
     function boot() {
-        UI.applyTheme('felt');
+        UI.applyTheme('banana');
         if (window.SoundSystem) {
             const unlock = () => { window.SoundSystem.init(); window.removeEventListener('pointerdown', unlock); };
             window.addEventListener('pointerdown', unlock);

@@ -66,7 +66,7 @@
     }
 
     function boot() {
-        UI.applyTheme('felt');
+        UI.applyTheme('banana');
         if (!Sync.init()) { status('off', 'Offline'); loaded = true; render(); return; }
         if (code) {
             Sync.onConnection(c => status(c ? 'ok' : 'wait', c ? 'Live' : 'Reconnecting…'));

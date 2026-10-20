@@ -313,7 +313,11 @@
             const myTransfers = s.transfers.filter(t => t.from === opts.meId || t.to === opts.meId);
             wrap.appendChild(h('section', { class: 'card hero-card ' + (mine > 0 ? 'is-up' : mine < 0 ? 'is-down' : '') },
                 h('div', { class: 'eyebrow', text: mine > 0 ? 'You won' : mine < 0 ? 'You lost' : 'You broke even' }),
-                h('div', { class: 'hero-amount num', text: K.formatMoney(Math.abs(mine)) }),
+                (() => {
+                    if (!heroAmount) heroAmount = h('div', { class: 'hero-amount num' });
+                    odometer(heroAmount, K.formatMoney(Math.abs(mine)));
+                    return heroAmount;
+                })(),
                 myTransfers.length ? h('ul', { class: 'my-transfers' }, myTransfers.map(t => h('li', null,
                     t.from === opts.meId
                         ? ['Pay ', h('strong', { text: byId(t.to).name }), ' ', h('span', { class: 'num', text: K.formatMoney(t.cents) })]
@@ -342,7 +346,7 @@
                             'aria-pressed': isPaid ? 'true' : 'false',
                             'aria-label': (isPaid ? 'Mark unpaid: ' : 'Mark paid: ') + byId(t.from).name + ' to ' + byId(t.to).name,
                             onclick: () => opts.onTogglePaid(t.key, !isPaid)
-                        }, isPaid ? '✓' : '') : null);
+                        }, checkSvg()) : null);
                 }))
                 : h('p', { class: 'muted', text: 'Everyone finished exactly even.' }));
         wrap.appendChild(transfersCard);
@@ -365,56 +369,6 @@
     function accentColor() {
         return getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() || '#fcec52';
     }
-
-    // Click sparks (after RareUI's ClickSpark): little lines fly out of every
-    // button press. One shared canvas, drawn only while sparks are alive.
-    let sparkCanvas = null;
-    let sparks = [];
-    let sparkRaf = 0;
-    function sparkAt(x, y) {
-        if (reducedMotion()) return;
-        if (!sparkCanvas) {
-            sparkCanvas = h('canvas', { class: 'spark-canvas', 'aria-hidden': 'true' });
-            document.body.appendChild(sparkCanvas);
-        }
-        const dpr = window.devicePixelRatio || 1;
-        if (sparkCanvas.width !== window.innerWidth * dpr || sparkCanvas.height !== window.innerHeight * dpr) {
-            sparkCanvas.width = window.innerWidth * dpr;
-            sparkCanvas.height = window.innerHeight * dpr;
-        }
-        const now = performance.now();
-        const color = accentColor();
-        for (let i = 0; i < 9; i++) sparks.push({ x, y, angle: (Math.PI * 2 * i) / 9 + Math.random() * 0.3, t0: now, color });
-        if (!sparkRaf) sparkRaf = requestAnimationFrame(drawSparks);
-    }
-    function drawSparks(now) {
-        const ctx = sparkCanvas.getContext('2d');
-        const dpr = window.devicePixelRatio || 1;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
-        const DUR = 420;
-        sparks = sparks.filter(sp => now - sp.t0 < DUR);
-        sparks.forEach(sp => {
-            const t = (now - sp.t0) / DUR;
-            const e = t * (2 - t);
-            const dist = e * 26 + 6;
-            const len = 9 * (1 - e);
-            const x1 = sp.x + dist * Math.cos(sp.angle);
-            const y1 = sp.y + dist * Math.sin(sp.angle);
-            ctx.strokeStyle = sp.color;
-            ctx.lineWidth = 2.2;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x1 + len * Math.cos(sp.angle), y1 + len * Math.sin(sp.angle));
-            ctx.stroke();
-        });
-        sparkRaf = sparks.length ? requestAnimationFrame(drawSparks) : 0;
-    }
-    document.addEventListener('pointerdown', e => {
-        const btn = e.target.closest && e.target.closest('button, .btn, a.btn');
-        if (btn && !btn.disabled) sparkAt(e.clientX, e.clientY);
-    }, { passive: true });
 
     // Emoji confetti. from: {x, y} in px (defaults to top centre).
     function burst(emojis, opts) {
@@ -449,31 +403,89 @@
         burst(emojis, { x: r.left + r.width / 2, y: r.top + r.height / 2, count: count || 14 });
     }
 
-    // Rolls a number from its previous value to the new one, then bumps it.
-    function rollTo(el, value, format) {
+    // Odometer, after rareui.com's AnimatedCounter: every digit is a wheel
+    // that rolls to its new face with a soft spring. textContent of the
+    // wheels is noise, so the real value lives in data-value + aria-label.
+    function odometer(el, text) {
         if (!el) return;
-        const prev = el._rollValue;
-        el._rollValue = value;
-        if (prev === undefined || prev === value || reducedMotion()) { setText(el, format(value)); return; }
-        cancelAnimationFrame(el._rollRaf);
-        const t0 = performance.now();
-        const DUR = 650;
-        const step = now => {
-            const t = Math.min(1, (now - t0) / DUR);
-            const e = 1 - Math.pow(1 - t, 3);
-            setText(el, format(Math.round(prev + (value - prev) * e)));
-            if (t < 1) el._rollRaf = requestAnimationFrame(step);
-        };
-        el._rollRaf = requestAnimationFrame(step);
-        el.classList.remove('bump');
-        void el.offsetWidth;
-        el.classList.add('bump');
+        text = String(text);
+        if (el.dataset.value === text) return;
+        el.dataset.value = text;
+        el.setAttribute('aria-label', text);
+        el.classList.add('odo');
+        const chars = Array.from(text);
+        let cells = Array.from(el.children);
+        if (cells.length !== chars.length || cells.some((c, i) => isDigit(chars[i]) !== c.classList.contains('odo-digit'))) {
+            el.innerHTML = '';
+            cells = chars.map(c => {
+                if (!isDigit(c)) return h('span', { class: 'odo-char', 'aria-hidden': 'true', text: c });
+                const strip = h('span', { class: 'odo-strip' });
+                for (let d = 0; d <= 9; d++) strip.appendChild(h('span', { text: String(d) }));
+                return h('span', { class: 'odo-digit', 'aria-hidden': 'true' }, strip);
+            });
+            cells.forEach(c => el.appendChild(c));
+            void el.offsetWidth; // start new wheels at 0, then roll
+        }
+        chars.forEach((c, i) => {
+            if (isDigit(c)) cells[i].firstChild.style.transform = `translateY(${-Number(c) * 10}%)`;
+            else if (cells[i].textContent !== c) cells[i].textContent = c;
+        });
+    }
+
+    function isDigit(c) { return c >= '0' && c <= '9'; }
+
+    // Kept for call sites: formats then rolls.
+    function rollTo(el, value, format) {
+        odometer(el, format(value));
+    }
+
+    // 5-box code entry, after rareui.com's OTP input. One real input sits on
+    // top (so typing, paste and autofill all work); the boxes just mirror it.
+    function codeBoxes(opts) {
+        const len = (opts && opts.length) || 5;
+        const input = h('input', {
+            class: 'otp-input', type: 'text', maxlength: String(len), autocomplete: 'off',
+            autocapitalize: 'characters', spellcheck: 'false', 'aria-label': 'Game code', enterkeyhint: 'go'
+        });
+        const boxes = Array.from({ length: len }, () => h('span', { class: 'otp-box', 'aria-hidden': 'true' }));
+        const wrap = h('label', { class: 'otp' }, h('div', { class: 'otp-boxes' }, boxes), input);
+        function paint() {
+            const v = window.KapokerCore.normalizeCode(input.value).slice(0, len);
+            if (input.value !== v) input.value = v;
+            boxes.forEach((b, i) => {
+                b.textContent = v[i] || '';
+                b.classList.toggle('is-filled', !!v[i]);
+                b.classList.toggle('is-caret', document.activeElement === input && i === Math.min(v.length, len - 1) && v.length < len);
+            });
+            wrap.classList.toggle('is-done', v.length === len);
+            if (v.length === len && opts && opts.onComplete) opts.onComplete(v);
+        }
+        input.addEventListener('input', paint);
+        input.addEventListener('focus', paint);
+        input.addEventListener('blur', paint);
+        paint();
+        return { el: wrap, input, value: () => input.value };
+    }
+
+    let heroAmount = null;
+
+    function checkSvg() {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('aria-hidden', 'true');
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', 'M6.5 12.5l3.6 3.5 7.4-8');
+        svg.appendChild(path);
+        return svg;
     }
 
     window.KapokerUI = {
         burst,
         burstFrom,
         rollTo,
+        odometer,
+        codeBoxes,
         h,
         setText,
         keyedList,

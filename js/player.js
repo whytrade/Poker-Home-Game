@@ -265,14 +265,14 @@
     // ----- simple states -----
 
     function buildCode(root) {
-        const input = h('input', { class: 'input input-lg num code-input', type: 'text', placeholder: 'CODE', maxlength: '8', autocapitalize: 'characters', autocomplete: 'off', 'aria-label': 'Game code', autofocus: true });
-        root.append(h('section', { class: 'card stack' },
+        const go = code => { if (code.length >= 4) window.location.search = '?game=' + code; };
+        const boxes = UI.codeBoxes({ onComplete: go });
+        root.append(h('section', { class: 'card stack center' },
             h('h1', { class: 'title', text: 'Game code' }),
-            h('form', { class: 'stack', onsubmit: e => {
-                e.preventDefault();
-                const code = K.normalizeCode(input.value);
-                if (code.length >= 4) window.location.search = '?game=' + code;
-            } }, input, h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Join' }))));
+            h('form', { class: 'stack', onsubmit: e => { e.preventDefault(); go(K.normalizeCode(boxes.value())); } },
+                boxes.el,
+                h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Join' }))));
+        setTimeout(() => boxes.input.focus(), 100);
         if (P.legacyId) {
             root.append(h('p', { class: 'muted small center pad', text: 'That link is from the old version of Kapoker. Ask the host for the new code.' }));
         }

@@ -61,7 +61,7 @@ try {
     await mia.page.click('button[type="submit"]:has-text("Buy in")');
     await check('Mia joins from her phone', async () => {
         await mia.page.waitForSelector('.me-name:has-text("Mia")', { timeout: 5000 });
-        assert.equal(await text(mia.page.locator('.hero-amount')), '$20');
+        assert.equal(await mia.page.locator('.hero-amount').getAttribute('data-value'), '$20');
     });
     await shot(mia.page, 'phone-joined');
 
@@ -72,13 +72,13 @@ try {
     await leo.page.click('button[type="submit"]:has-text("Buy in")');
     await check('Leo joins with a 2x buy-in', async () => {
         await leo.page.waitForSelector('.me-name:has-text("Leo")', { timeout: 5000 });
-        assert.equal(await text(leo.page.locator('.hero-amount')), '$40');
+        assert.equal(await leo.page.locator('.hero-amount').getAttribute('data-value'), '$40');
     });
 
     await check('host sees both phone players', async () => {
         await host.page.waitForSelector('.player-row:has-text("Mia")');
         await host.page.waitForSelector('.player-row:has-text("Leo")');
-        await host.page.waitForFunction(() => [...document.querySelectorAll('.player-row')].some(r => r.textContent.includes('Leo') && r.querySelector('.pamt').textContent === '$40'), null, { timeout: 3000 });
+        await host.page.waitForFunction(() => [...document.querySelectorAll('.player-row')].some(r => r.textContent.includes('Leo') && r.querySelector('.pamt').dataset.value === '$40'), null, { timeout: 3000 });
     });
 
     // ---------- host adds a player by hand + one-tap buy-in ----------
@@ -89,30 +89,30 @@ try {
     await check('manual player + one-tap buy-in', async () => {
         await host.page.waitForFunction(() => {
             const row = [...document.querySelectorAll('.player-row')].find(r => r.textContent.includes('Sam'));
-            return row && row.querySelector('.pamt').textContent === '$40';
+            return row && row.querySelector('.pamt').dataset.value === '$40';
         });
     });
 
     // ---------- phone rebuy ----------
     await mia.page.click('button[type="submit"]:has-text("Rebuy")');
     await check('Mia rebuys from her phone', async () => {
-        await mia.page.waitForFunction(() => document.querySelector('.hero-amount').textContent === '$40', null, { timeout: 5000 });
+        await mia.page.waitForFunction(() => document.querySelector('.hero-amount').dataset.value === '$40', null, { timeout: 5000 });
         await host.page.waitForFunction(() => {
             const row = [...document.querySelectorAll('.player-row')].find(r => r.textContent.includes('Mia'));
-            return row && row.querySelector('.pamt').textContent === '$40';
+            return row && row.querySelector('.pamt').dataset.value === '$40';
         });
     });
     await check('pot total is $120', async () => {
-        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').textContent === '$120', null, { timeout: 3000 });
+        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').dataset.value === '$120', null, { timeout: 3000 });
     });
     await shot(host.page, 'host-live');
 
     // ---------- undo ----------
     await host.page.click('.player-row:has-text("Sam") .btn-plus');
-    await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').textContent === '$140');
+    await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').dataset.value === '$140');
     await host.page.click('.toast-action:has-text("Undo")');
     await check('undo removes the accidental buy-in', async () => {
-        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').textContent === '$120');
+        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').dataset.value === '$120');
     });
 
     // ---------- host offline: rebuy queues, then applies when host is back ----------
@@ -130,10 +130,10 @@ try {
         await hostPage.waitForSelector('.player-row:has-text("Leo")', { timeout: 8000 });
         await hostPage.waitForFunction(() => {
             const row = [...document.querySelectorAll('.player-row')].find(r => r.textContent.includes('Leo'));
-            return row && row.querySelector('.pamt').textContent === '$60';
+            return row && row.querySelector('.pamt').dataset.value === '$60';
         }, null, { timeout: 8000 });
         await leo.page.waitForFunction(() => !document.getElementById('pending-bar'), null, { timeout: 5000 });
-        await leo.page.waitForFunction(() => document.querySelector('.hero-amount').textContent === '$60', null, { timeout: 3000 });
+        await leo.page.waitForFunction(() => document.querySelector('.hero-amount').dataset.value === '$60', null, { timeout: 3000 });
     });
 
     // ---------- end game ----------
@@ -190,9 +190,9 @@ try {
     await shot(hostPage, 'host-settled');
     await check('phones show personal results', async () => {
         await mia.page.waitForSelector('.hero-card:has-text("You won")', { timeout: 5000 });
-        assert.equal(await text(mia.page.locator('.hero-card .hero-amount')), '$50');
+        assert.equal(await mia.page.locator('.hero-card .hero-amount').getAttribute('data-value'), '$50');
         await leo.page.waitForSelector('.hero-card:has-text("You lost")', { timeout: 5000 });
-        assert.equal(await text(leo.page.locator('.hero-card .hero-amount')), '$46');
+        assert.equal(await leo.page.locator('.hero-card .hero-amount').getAttribute('data-value'), '$46');
     });
     await shot(leo.page, 'phone-settled');
 

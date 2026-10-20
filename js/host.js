@@ -767,9 +767,9 @@
             h('div', { class: 'field' }, h('div', { class: 'label', text: 'Colour' }), themePicker(theme, id => { theme = id; UI.applyTheme(id); savePrefs({ theme: id }); })),
             createBtn);
 
-        const codeInput = h('input', { class: 'input num code-input', type: 'text', placeholder: 'CODE', maxlength: '8', autocapitalize: 'characters', autocomplete: 'off', 'aria-label': 'Game code' });
-        const resume = h('form', { class: 'inline-form', onsubmit: e => { e.preventDefault(); resumeByCode(codeInput.value); } },
-            codeInput, h('button', { class: 'btn btn-ghost', type: 'submit', text: 'Host it' }));
+        const codeBoxes = UI.codeBoxes();
+        const resume = h('form', { class: 'stack', onsubmit: e => { e.preventDefault(); resumeByCode(codeBoxes.value()); } },
+            codeBoxes.el, h('button', { class: 'btn btn-ghost btn-block', type: 'submit', text: 'Host it' }));
 
         const archived = (loadJSON(LS_ARCHIVE) || []).filter(Boolean).slice(0, 6);
         root.append(...[

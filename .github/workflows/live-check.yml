@@ -1,0 +1,32 @@
+name: Live site check
+on:
+  workflow_dispatch:
+  push:
+    branches: [diag-run]
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i --no-save playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Find latest Vercel production deployment URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(gh api "repos/${{ github.repository }}/deployments?environment=Production&per_page=1" --jq '.[0].id' || true)
+          url=$(gh api "repos/${{ github.repository }}/deployments/$id/statuses" --jq '.[0].environment_url' || true)
+          echo "PROD_DEPLOY_URL=$url" >> "$GITHUB_ENV"
+      - run: node test/live-check.mjs
+        continue-on-error: true
+      - name: Publish results to diag-results branch
+        run: |
+          cp -r diag /tmp/diag
+          git config user.name "live-check" && git config user.email "live-check@users.noreply.github.com"
+          git checkout --orphan diag-results && git rm -rq . && cp -r /tmp/diag/* .
+          git add -A && git commit -qm "Live check ${{ github.run_id }}" && git push -f origin diag-results

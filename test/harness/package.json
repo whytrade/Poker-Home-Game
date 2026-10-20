@@ -1,0 +1,5 @@
+{
+  "//": "Pins test/harness/*.js to CommonJS even if the root package.json switches to ESM.",
+  "private": true,
+  "type": "commonjs"
+}

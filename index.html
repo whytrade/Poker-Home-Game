@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="banana">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Kapoker — Host</title>
+    <meta name="description" content="Run a home poker game: phone buy-ins, live chip tracking and exact payouts.">
+    <meta name="theme-color" content="#0b0f14">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kapoker">
+    <link rel="icon" href="images/k-favicon.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="images/k-favicon.png">
+    <link rel="preload" href="fonts/sf-pro-rounded-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="host">
+    <header class="topbar">
+        <button id="brand" class="brand" type="button" aria-label="Kapoker">
+            <span class="brand-mark" aria-hidden="true">♠</span>
+            <span class="brand-text">Kapoker</span>
+        </button>
+        <div class="topbar-game">
+            <span id="topbar-name" class="topbar-name"></span>
+            <button id="topbar-code" class="code-chip num" type="button" title="Show join QR" hidden></button>
+        </div>
+        <div class="sync" aria-live="polite">
+            <span id="sync-dot" class="sync-dot" data-state="wait"></span>
+            <span id="sync-label" class="sync-label">Connecting…</span>
+        </div>
+        <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">⚙︎</button>
+    </header>
+
+    <main id="app" class="app" aria-live="off"></main>
+
+    <noscript><p class="pad center">Kapoker needs JavaScript.</p></noscript>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/soundSystem.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/host.js"></script>
+</body>
+</html>

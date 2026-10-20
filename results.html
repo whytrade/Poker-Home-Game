@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="banana">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Results — Kapoker</title>
+    <meta name="theme-color" content="#0b0f14">
+    <link rel="icon" href="images/k-favicon.png" type="image/png">
+    <link rel="preload" href="fonts/sf-pro-rounded-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="results">
+    <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Kapoker">
+            <span class="brand-mark" aria-hidden="true">♠</span>
+            <span class="brand-text">Kapoker</span>
+        </a>
+        <div class="topbar-game"><span id="topbar-name" class="topbar-name"></span></div>
+        <div class="sync" aria-live="polite">
+            <span id="sync-dot" class="sync-dot" data-state="wait"></span>
+            <span id="sync-label" class="sync-label">Connecting…</span>
+        </div>
+    </header>
+
+    <main id="app" class="app"></main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/results.js"></script>
+</body>
+</html>

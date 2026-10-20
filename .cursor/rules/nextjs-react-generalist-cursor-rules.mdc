@@ -1,0 +1,148 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+Instruction: Follow all principles below, tailored for JavaScript, TypeScript, CSS, Tailwind, Node.js, and Next.js. Ensure security, performance, and operational soundness. Break changes into discrete steps with small tests. Review existing code, plan changes, and address security/performance/edge cases.
+
+DRY (Don't Repeat Yourself)
+Definition: Single representation of knowledge.
+Key Points:
+Abstract repetitive JavaScript logic or CSS styles.
+Centralize API logic in Node.js utils.
+Reuse Tailwind classes via utility functions.
+Risks:
+Inconsistent behavior in Node.js APIs.
+Duplicated CSS causing style conflicts.
+Solutions:
+Use JavaScript modules for shared logic.
+Centralize API configs in Node.js/Next.js.
+Implementation:
+Parameterized functions.
+Centralized Tailwind config.
+Security Review:
+Avoid duplicating sensitive logic (e.g., auth checks).
+Use centralized input sanitization.
+Operational: Monitor reused logic for performance.
+Test: Verify API consistency after abstraction.
+Curly's Law
+Definition: Single responsibility per entity.
+Key Points:
+JavaScript functions handle one task.
+CSS classes serve one purpose.
+Avoid multi-purpose variables.
+Sub-Principle: Single Responsibility
+Metric: Function description < 3 lines.
+Security Review: Single-purpose functions reduce exploit surfaces.
+Operational: Log violations in CI/CD linting.
+Test: Validate function does one task.
+KISS (Keep It Simple, Stupid)
+Definition: Prioritize simplicity.
+Benefits:
+Faster JavaScript execution.
+Fewer bugs in Node.js endpoints.
+Easier CSS debugging.
+Metric: Cyclomatic complexity < 5.
+Guidelines:
+Use straightforward JavaScript logic.
+Avoid over-engineered Next.js API routes.
+Security Review: Simple code reduces injection risks (e.g., XSS in HTML).
+Operational: Monitor complexity in code reviews.
+Test: Check JavaScript logic executes as expected.
+Cognitive Clarity
+Definition: Code instantly understandable.
+Sub-Principle: Don't Make Me Think
+Definition: Minimize cognitive load.
+Metrics:
+Time-to-understand < 30 seconds.
+Zero surprise in Next.js behavior.
+Implementation:
+Use descriptive names (e.g., ::USER_PROFILE_FUNCTION::).
+Follow JavaScript/CSS conventions.
+Minimize nested logic.
+Security Review: Clear naming avoids misinterpreting sensitive data handling.
+Operational: Use linters for naming consistency.
+Test: Confirm function intent from name alone.
+YAGNI (You Aren't Gonna Need It)
+Definition: Implement only required features.
+Reasons:
+Avoid bloated Next.js bundles.
+Prevent unused API endpoints.
+Security Review: Unneeded code increases attack surface.
+Operational: Audit unused code in CI/CD.
+Test: Verify only necessary features are deployed.
+Optimization Discipline
+Definition: Optimize only when needed.
+Quote: "Premature optimization is the root of all evil" (Donald Knuth).
+Guidelines:
+Profile Next.js SSR/SSG performance.
+Optimize critical JavaScript functions (3% of app).
+Statistics:
+Critical section: 3%.
+Non-critical optimizations: 97%.
+Security Review: Avoid premature caching that leaks data.
+Operational: Monitor performance with tools like Lighthouse.
+Test: Measure page load time post-optimization.
+Boy Scout Rule
+Definition: Incrementally improve code quality.
+Practices:
+Refactor JavaScript during updates.
+Reduce Node.js technical debt.
+Fix CSS/Tailwind issues immediately.
+Metric: Code health index ≥ 0.8.
+Max Degradation: 5% monthly decline.
+Rationale:
+Prevents Next.js code rot.
+Reduces maintenance costs.
+Security Review: Refactor insecure patterns (e.g., outdated auth).
+Operational: Track code health in CI/CD.
+Test: Validate refactored code maintains functionality.
+Maintainer Focus
+Definition: Code for long-term maintainability.
+Considerations:
+Assume unfamiliar maintainers for Next.js.
+Document non-obvious API decisions.
+Anticipate future updates.
+Quote: "Code as if the maintainer is a violent psychopath who knows where you live" (Martin Golding).
+Practice: Assume zero domain knowledge.
+Time Factor:
+6-month knowledge decay.
+Code foreign after 1 year.
+Security Review: Document security decisions to avoid misinterpretation.
+Operational: Use JSDoc/TS for maintainability.
+Test: Verify documentation clarity with new developers.
+Principle of Least Astonishment
+Definition: Ensure predictable behavior.
+Implementation:
+Consistent JavaScript function naming.
+Standard Next.js error handling.
+Minimal side effects in functions.
+Violation Examples:
+Unexpected behavior in JavaScript utils.
+Non-standard Node.js error responses.
+Convention Rules:
+Follow TypeScript/JavaScript idioms.
+Use consistent API error formats.
+Security Review: Predictable behavior prevents security missteps.
+Operational: Monitor API consistency via logs.
+Test: Confirm API responses match expected patterns.
+Implementation Notes:
+Code Review: Review existing code in <CODE_REVIEW> tags, analyzing JavaScript, Node.js logic, or CSS.
+Planning: Outline changes in <planning> tags, breaking into small, testable steps.</planning>
+Security: Conduct <SECURITY_REVIEW> for input handling, auth, and data exposure.
+Performance: Optimize for Next.js SSR/SSG, JavaScript execution, and Tailwind bundle size.
+Edge Cases: Handle null states, API failures, and browser inconsistencies.
+Operational: Ensure logging, monitoring (e.g., Sentry), and CI/CD integration.
+Feedback: Adapt based on project evolution.
+Clarification: If specific code examples or contexts are needed, please provide details.

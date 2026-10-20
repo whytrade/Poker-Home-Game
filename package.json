@@ -1,0 +1,16 @@
+{
+  "name": "kapoker",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Kapoker — home poker game manager: phone buy-ins, live chip tracking and exact payouts.",
+  "scripts": {
+    "dev": "node test/harness/server.js 4173",
+    "test": "node --test test/*.test.js",
+    "test:e2e": "node test/e2e.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whytrade/Poker-Home-Game.git"
+  },
+  "license": "MIT"
+}

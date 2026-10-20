@@ -1,0 +1,11 @@
+node_modules
+next-app
+test
+.git
+.github
+.vscode
+README.md
+LICENSE
+package.json
+package-lock.json
+firebase.json

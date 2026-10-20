@@ -1,0 +1,83 @@
+{
+  "at": "2026-10-20T19:23:33.743Z",
+  "sites": [
+    {
+      "url": "https://poker-home-game-ex5ks46hi-taodoggers-projects.vercel.app",
+      "status": 200,
+      "finalUrl": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fpoker-home-game-ex5ks46hi-taodoggers-projects.vercel.app%252F%26nonce%3D17f894c03d432aefe7a42da60fb9ef57952c84608326a536a6c9a35df3f13c57",
+      "title": "Login – Vercel",
+      "isNewApp": false,
+      "walled": true,
+      "snippet": "<!DOCTYPE html><html data-dpl-id=\"dpl_Gjm2DG6HgtYiGqm7VBumC24QHHKW\" class=\"VEU71W_className VF6YLG_className VEU71W_variable VF6YLG_variable dash\" lang=\"en-US\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\"/><link rel=\"stylesheet\" hr"
+    },
+    {
+      "url": "https://poker-home-game-five.vercel.app",
+      "status": 200,
+      "finalUrl": "https://poker-home-game-five.vercel.app/",
+      "title": "Kapoker — Host",
+      "isNewApp": true,
+      "walled": false,
+      "snippet": "<!DOCTYPE html> <html lang=\"en\" data-theme=\"banana\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\"> <title>Kapoker — Host</title> <meta name=\"description\" content=\"Run a home poker game: phone buy-ins, live chip tracking and exa"
+    },
+    {
+      "url": "https://poker-home-game-taodoggers-projects.vercel.app",
+      "status": 200,
+      "finalUrl": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fpoker-home-game-taodoggers-projects.vercel.app%252F%26nonce%3D08a3bef3b7faa2719e452f293258b4c30f7b0b3af0b51c902467750885f1db9d",
+      "title": "Login – Vercel",
+      "isNewApp": false,
+      "walled": true,
+      "snippet": "<!DOCTYPE html><html data-dpl-id=\"dpl_Gjm2DG6HgtYiGqm7VBumC24QHHKW\" class=\"VEU71W_className VF6YLG_className VEU71W_variable VF6YLG_variable dash\" lang=\"en-US\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\"/><link rel=\"stylesheet\" hr"
+    },
+    {
+      "url": "https://poker-home-game.vercel.app",
+      "status": 200,
+      "finalUrl": "https://poker-home-game.vercel.app/",
+      "title": "Poker Home Game",
+      "isNewApp": false,
+      "walled": false,
+      "snippet": "<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"UTF-8\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /> <link rel=\"preconnect\" href=\"https://rsms.me/\" /> <link rel=\"stylesheet\" href=\"https://rsms.me/inter/inter.css\" /> <title>Poker Home Game</title> <script type=\"mo"
+    },
+    {
+      "url": "https://poker-home-game-699e7.web.app",
+      "status": 200,
+      "finalUrl": "https://poker-home-game-699e7.web.app/",
+      "title": "Kapoker — Host",
+      "isNewApp": true,
+      "walled": false,
+      "snippet": "<!DOCTYPE html> <html lang=\"en\" data-theme=\"banana\"> <head> <meta charset=\"UTF-8\"> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\"> <title>Kapoker — Host</title> <meta name=\"description\" content=\"Run a home poker game: phone buy-ins, live chip tracking and exa"
+    }
+  ],
+  "db": {
+    "readGames": {
+      "status": 401
+    },
+    "write": {
+      "status": 200,
+      "text": "{\"healthcheck\":true,\"v\":2}"
+    },
+    "readBack": {
+      "status": 200,
+      "text": "{\"healthcheck\":true,\"v\":true}"
+    },
+    "delete": {
+      "status": 200,
+      "text": "null"
+    },
+    "ok": false
+  },
+  "flow": {
+    "site": "https://poker-home-game-five.vercel.app",
+    "code": "8BQVW",
+    "hostLive": true,
+    "syncLabel": "Live",
+    "joinUrl": "https://poker-home-game-five.vercel.app/buy-in.html?game=8BQVW",
+    "phoneJoined": true,
+    "hostSawPhone": true,
+    "countArrived": true,
+    "settled": [
+      "Manual → Bot $10"
+    ],
+    "cleanup": 200
+  },
+  "errors": []
+}

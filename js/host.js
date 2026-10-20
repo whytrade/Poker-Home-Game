@@ -444,62 +444,6 @@
                 spread.ok ? h('button', { class: 'btn btn-ghost', type: 'button', text: 'Settle anyway', onclick: () => { close(); settle('spread'); } }) : null)));
     }
 
-    // Amount field that accepts dollars or chips.
-    function amountField(opts) {
-        const rate = S.game.rate;
-        let unit = opts.unit || 'money';
-        const input = h('input', {
-            class: 'input input-lg num',
-            type: 'text',
-            inputmode: 'decimal',
-            autocomplete: 'off',
-            enterkeyhint: 'done',
-            'aria-label': 'Amount'
-        });
-        const preview = h('div', { class: 'muted small amount-preview' });
-        const unitBtns = {};
-        const unitRow = h('div', { class: 'seg', role: 'group', 'aria-label': 'Unit' },
-            ['money', 'chips'].map(u => (unitBtns[u] = h('button', {
-                type: 'button',
-                class: 'seg-btn',
-                text: u === 'money' ? '$' : 'Chips',
-                onclick: () => { setUnit(u); input.focus(); }
-            }))));
-        function value() {
-            if (unit === 'money') {
-                const cents = K.parseMoneyToCents(input.value);
-                return Number.isInteger(cents) ? K.chipsForCents(rate, cents) : NaN;
-            }
-            return K.parseChips(input.value);
-        }
-        function update() {
-            const chips = value();
-            if (!input.value.trim()) preview.textContent = '';
-            else if (!Number.isInteger(chips) || chips <= 0) preview.textContent = 'Enter an amount';
-            else {
-                const cents = K.centsForChips(rate, chips);
-                const typed = unit === 'money' ? K.parseMoneyToCents(input.value) : cents;
-                preview.textContent = unit === 'money'
-                    ? `${K.formatChips(chips)} chips` + (typed !== cents ? ` (worth ${K.formatMoney(cents)} — chips round down)` : '')
-                    : `worth ${K.formatMoney(cents)}`;
-            }
-        }
-        function setUnit(u) {
-            const chips = value();
-            unit = u;
-            Object.keys(unitBtns).forEach(k => unitBtns[k].classList.toggle('is-on', k === u));
-            input.setAttribute('inputmode', u === 'money' ? 'decimal' : 'numeric');
-            if (Number.isInteger(chips) && chips > 0) {
-                input.value = u === 'money' ? (K.centsForChips(rate, chips) / 100).toString() : String(chips);
-            }
-            update();
-        }
-        input.addEventListener('input', update);
-        if (opts.initialChips) input.value = unit === 'money' ? (K.centsForChips(rate, opts.initialChips) / 100).toString() : String(opts.initialChips);
-        setUnit(unit);
-        return { el: h('div', { class: 'amount-field' }, h('div', { class: 'amount-row' }, input, unitRow), preview), input, value };
-    }
-
     function openPlayerSheet(playerId) {
         const player = K.findPlayer(S.game, playerId);
         if (!player) return;
@@ -507,34 +451,31 @@
         UI.openSheet(player.name, close => {
             const p = K.findPlayer(S.game, playerId);
             const mine = S.game.buyIns.filter(b => b.playerId === playerId);
-            const field = live ? amountField({ initialChips: S.game.rate.chips }) : null;
-            const quick = live ? h('div', { class: 'quick-row' }, [0.5, 1, 2, 5].map(mult => {
-                const chips = Math.round(S.game.rate.chips * mult);
-                return h('button', {
-                    class: 'chip-btn', type: 'button',
-                    text: K.formatMoney(K.centsForChips(S.game.rate, chips)),
-                    onclick: () => { addCustom(chips); }
-                });
-            })) : null;
-            function addCustom(chips) {
-                const n = chips !== undefined ? chips : field.value();
+            let addBtn = null;
+            const stack = live ? UI.stacker({
+                rate: () => S.game.rate,
+                onChange: (c, cents) => { if (addBtn) UI.setText(addBtn, 'Add ' + K.formatMoney(cents)); }
+            }) : null;
+            function addStacked() {
+                const n = stack.chips();
                 if (!Number.isInteger(n) || n <= 0) { UI.toast('Enter an amount above 0', { type: 'error' }); return; }
                 const r = act(g => K.addBuyIn(g, { playerId, chips: n, via: 'host', now: Date.now() }));
                 if (r.ok) {
                     S.flash[playerId] = Date.now();
-                    UI.play('playChipSound');
+                    UI.play('playKachingSound');
+                    burstOnRow(playerId, ['🪙'], 10);
                     const id = r.result.id;
                     UI.toast(`${p.name} +${K.formatMoney(K.centsForChips(S.game.rate, n))}`, { type: 'success', action: { label: 'Undo', run: () => undoBuyIn(id) } });
                     close();
                 }
             }
+            if (stack) {
+                addBtn = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit' });
+                stack.paint();
+            }
             const nameInput = h('input', { class: 'input', type: 'text', maxlength: String(K.MAX_NAME), value: p.name, 'aria-label': 'Name', autocomplete: 'off' });
             return h('div', { class: 'stack' },
-                live ? h('form', { class: 'stack-sm', onsubmit: e => { e.preventDefault(); addCustom(); } },
-                    h('label', { class: 'label', text: 'Add a buy-in' }),
-                    quick,
-                    field.el,
-                    h('button', { class: 'btn btn-primary btn-block', type: 'submit', text: 'Add buy-in' })) : null,
+                live ? h('form', { class: 'stack', onsubmit: e => { e.preventDefault(); addStacked(); } }, stack.el, addBtn) : null,
                 h('div', { class: 'stack-sm' },
                     h('div', { class: 'label', text: `Buy-ins (${mine.length}) · ${K.formatMoney(K.centsForChips(S.game.rate, mine.reduce((s, b) => s + b.chips, 0)))}` }),
                     mine.length ? h('ul', { class: 'mini-list' }, mine.slice().reverse().map(b => h('li', null,

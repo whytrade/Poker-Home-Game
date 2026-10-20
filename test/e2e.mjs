@@ -68,7 +68,7 @@ try {
     const leo = await newDevice(browser, server.url, { viewport: PHONE, label: 'leo' });
     await leo.page.goto(`${server.url}/buy-in.html?game=${code}`);
     await leo.page.fill('input[aria-label="Your name"]', 'Leo');
-    await leo.page.click('.chip-btn:has-text("$40")');
+    await leo.page.click('.stack-plus');
     await leo.page.click('button[type="submit"]:has-text("Buy in")');
     await check('Leo joins with a 2x buy-in', async () => {
         await leo.page.waitForSelector('.me-name:has-text("Leo")', { timeout: 5000 });
@@ -113,6 +113,19 @@ try {
     await host.page.click('.toast-action:has-text("Undo")');
     await check('undo removes the accidental buy-in', async () => {
         await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').dataset.value === '$120');
+    });
+
+    // ---------- tap into a player, stack +$20s, add ----------
+    await host.page.click('.player-row:has-text("Sam") .pinfo');
+    await host.page.click('.sheet .stack-plus');
+    await host.page.click('.sheet .stack-plus');
+    await check('drawer stacks +$20 taps into one buy-in', async () => {
+        await host.page.waitForSelector('.sheet button[type="submit"]:has-text("Add $60")');
+        await shot(host.page, 'host-drawer-stack');
+        await host.page.click('.sheet button[type="submit"]:has-text("Add $60")');
+        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').dataset.value === '$180', null, { timeout: 3000 });
+        await host.page.locator('.toast-action:has-text("Undo")').last().click();
+        await host.page.waitForFunction(() => document.querySelector('.stat-main .stat-value').dataset.value === '$120', null, { timeout: 3000 });
     });
 
     // ---------- host offline: rebuy queues, then applies when host is back ----------

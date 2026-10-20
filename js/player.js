@@ -113,6 +113,7 @@
             setTimeout(() => UI.burst(confetti(), { count: 34 }), 60);
         } else if (type === 'buyin') {
             UI.toast(ack.message || 'Rebuy added', { type: 'success' });
+            if (P.refs.picker && P.refs.picker.reset) P.refs.picker.reset();
             UI.play('playChipSound');
             setTimeout(() => UI.burstFrom(document.querySelector('.hero-amount'), ['🪙'], 12), 60);
         } else if (type === 'final') {
@@ -302,45 +303,16 @@
 
     // ----- join -----
 
-    // Buy-in picker: quick multiples of the standard buy-in + custom $.
+    // Buy-in amount: tap +$20 to stack, then send (UI.stacker).
     function amountPicker(opts) {
-        const state = { mult: 1, custom: '' };
-        const quick = h('div', { class: 'quick-row' });
-        const customInput = h('input', { class: 'input input-lg num', type: 'text', inputmode: 'decimal', autocomplete: 'off', placeholder: 'Other amount', 'aria-label': 'Other amount in dollars' });
-        const preview = h('div', { class: 'muted small amount-preview' });
-        function chips() {
-            const rate = P.game.rate;
-            if (state.mult) return Math.round(rate.chips * state.mult);
-            const cents = K.parseMoneyToCents(customInput.value);
-            return Number.isInteger(cents) ? K.chipsForCents(rate, cents) : NaN;
-        }
-        function paint() {
-            const rate = P.game.rate;
-            quick.innerHTML = '';
-            [1, 2, 3].forEach(mult => {
-                quick.appendChild(h('button', {
-                    type: 'button',
-                    class: 'chip-btn' + (state.mult === mult ? ' is-on' : ''),
-                    onclick: () => { state.mult = mult; customInput.value = ''; paint(); UI.play('playUIClickSound'); }
-                }, h('span', { class: 'num', text: K.formatMoney(K.centsForChips(rate, Math.round(rate.chips * mult))) })));
-            });
-            const n = chips();
-            if (Number.isInteger(n) && n > 0) {
-                const cents = K.centsForChips(rate, n);
-                const typed = state.mult ? cents : K.parseMoneyToCents(customInput.value);
-                preview.textContent = `You get ${K.formatChips(n)} chips` + (typed !== cents ? ` (worth ${K.formatMoney(cents)})` : '');
-            } else preview.textContent = state.mult ? '' : 'Enter an amount';
-        }
-        customInput.addEventListener('input', () => { state.mult = customInput.value.trim() ? 0 : 1; paint(); });
-        customInput.addEventListener('focus', () => { if (customInput.value.trim()) state.mult = 0; });
-        return { el: h('div', { class: 'stack-sm' }, quick, customInput, preview), chips, paint, label: opts && opts.label };
+        return UI.stacker({ rate: () => P.game.rate, onChange: opts && opts.onChange });
     }
 
     function buildJoin(root) {
         const r = P.refs;
         r.name = h('input', { class: 'input input-lg', type: 'text', maxlength: String(K.MAX_NAME), autocomplete: 'given-name', placeholder: 'Your name', 'aria-label': 'Your name', enterkeyhint: 'done' });
         r.name.value = Sync.storageGet('kapoker.player.name') || '';
-        r.picker = amountPicker();
+        r.picker = amountPicker({ onChange: (c, cents) => { if (r.submit) UI.setText(r.submit, 'Buy in ' + K.formatMoney(cents)); } });
         r.title = h('h1', { class: 'title title-xl' });
         r.submit = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Buy in 🪙' });
         r.removed = h('div', { class: 'callout callout-warn', text: 'The host removed you.' });
@@ -380,7 +352,7 @@
         r.name = h('div', { class: 'me-name' });
         r.amount = h('div', { class: 'hero-amount num' });
         r.sub = h('div', { class: 'muted num' });
-        r.picker = amountPicker();
+        r.picker = amountPicker({ onChange: (c, cents) => { if (r.rebuyBtn) UI.setText(r.rebuyBtn, 'Rebuy ' + K.formatMoney(cents)); } });
         r.rebuyBtn = h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'submit', text: 'Rebuy 🪙' });
         root.append(
             h('section', { class: 'card hero-card' },

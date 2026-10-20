@@ -467,6 +467,75 @@
         return { el: wrap, input, value: () => input.value };
     }
 
+    // "+$20, +$20, +$20 → Add $60": tap plus to stack buy-ins, minus to back
+    // off, or type another amount. opts: { rate: () => rate, min, onChange(chips, cents) }
+    function stacker(opts) {
+        const K = window.KapokerCore;
+        const min = opts.min || 1;
+        let steps = min;
+        let custom = null; // cents typed into "Other amount"
+        const amt = h('div', { class: 'stack-amt num' });
+        const sub = h('div', { class: 'stack-sub muted num' });
+        const minus = h('button', { type: 'button', class: 'stack-btn stack-minus', 'aria-label': 'One less buy-in', text: '−' });
+        const plus = h('button', { type: 'button', class: 'stack-btn stack-plus' });
+        const otherInput = h('input', { class: 'input num', type: 'text', inputmode: 'decimal', autocomplete: 'off', placeholder: 'Other amount ($)', 'aria-label': 'Other amount in dollars' });
+        const other = h('button', { type: 'button', class: 'btn btn-link small', text: 'Other amount' });
+        otherInput.hidden = true;
+
+        function chips() {
+            const rate = opts.rate();
+            return custom !== null ? K.chipsForCents(rate, custom) : rate.chips * steps;
+        }
+        function paint() {
+            const rate = opts.rate();
+            const c = chips();
+            const cents = K.centsForChips(rate, c);
+            odometer(amt, K.formatMoney(cents));
+            setText(sub, custom !== null ? `${K.formatChips(c)} chips` : `${steps} × ${K.formatMoney(rate.cents)} · ${K.formatChips(c)} chips`);
+            setText(plus, '+' + K.formatMoney(rate.cents));
+            plus.setAttribute('aria-label', `Add another ${K.formatMoney(rate.cents)}`);
+            minus.disabled = custom === null && steps <= min;
+            if (opts.onChange) opts.onChange(c, cents);
+        }
+        plus.addEventListener('click', () => {
+            if (custom !== null) { custom = null; otherInput.value = ''; otherInput.hidden = true; }
+            else steps += 1;
+            vibrate(10);
+            play('playChipSound');
+            burstFrom(plus, ['🪙'], 5);
+            paint();
+        });
+        minus.addEventListener('click', () => {
+            if (custom !== null) { custom = null; otherInput.value = ''; otherInput.hidden = true; }
+            else steps = Math.max(min, steps - 1);
+            vibrate(8);
+            paint();
+        });
+        other.addEventListener('click', () => {
+            otherInput.hidden = !otherInput.hidden;
+            if (!otherInput.hidden) otherInput.focus();
+            else { custom = null; otherInput.value = ''; paint(); }
+        });
+        otherInput.addEventListener('input', () => {
+            const cents = K.parseMoneyToCents(otherInput.value);
+            custom = Number.isInteger(cents) && cents > 0 ? cents : null;
+            paint();
+        });
+        function reset() {
+            steps = min;
+            custom = null;
+            otherInput.value = '';
+            otherInput.hidden = true;
+            paint();
+        }
+        const el = h('div', { class: 'stacker-wrap' },
+            h('div', { class: 'stacker' }, minus, h('div', { class: 'stack-total' }, amt, sub), plus),
+            otherInput,
+            other);
+        paint();
+        return { el, chips, paint, reset };
+    }
+
     let heroAmount = null;
 
     function checkSvg() {
@@ -486,6 +555,7 @@
         rollTo,
         odometer,
         codeBoxes,
+        stacker,
         h,
         setText,
         keyedList,

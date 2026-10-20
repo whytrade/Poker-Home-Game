@@ -239,7 +239,8 @@
         if (!on) { if (sky) sky.remove(); return; }
         if (sky || !document.body) return;
         sky = h('div', { id: 'banana-sky', 'aria-hidden': 'true' });
-        for (let i = 0; i < 14; i++) {
+        const count = window.innerWidth < 600 ? 8 : 14;
+        for (let i = 0; i < count; i++) {
             sky.appendChild(h('span', {
                 class: 'banana',
                 text: '🍌',
